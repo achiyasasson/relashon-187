@@ -497,6 +497,12 @@
         <span>דשבורד ראשי</span>
       </button>
 
+            <button id="navTabCalendar" onclick="switchTab('calendar')" class="py-2.5 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap transition cursor-pointer">
+        <i data-lucide="calendar" class="w-4 h-4 text-emerald-500"></i>
+        <span>לוח שנה מסונכרן</span>
+        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">187</span>
+      </button>
+
       <button id="navTabInternal" onclick="switchTab('internal')" class="py-2.5 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap transition cursor-pointer">
         <i data-lucide="calendar-days" class="w-4 h-4"></i>
         <span>לו״ז פנימי חטיבתי</span>
@@ -748,6 +754,215 @@
 
 
     <!-- ==================== TAB 1: INTERNAL SCHEDULE (לו"ז פנימי חטיבתי) ==================== -->
+    
+    <!-- ==================== TAB: CALENDAR (לוח שנה מסונכרן) ==================== -->
+    <div id="tabContentCalendar" class="hidden space-y-5 sm:space-y-6">
+
+      <!-- Calendar Hero & Sync Status Banner -->
+      <div class="card-luxury rounded-3xl p-5 sm:p-6 relative overflow-hidden border border-emerald-500/20 shadow-xl">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div class="flex items-start gap-3.5 sm:gap-4">
+            <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-500/25 shrink-0">
+              <i data-lucide="calendar-check-2" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">לוח שנה חטיבתי – סנכרון חי 24/7</h2>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  סנכרון מלא פעיל
+                </span>
+                <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                  187brigade@gmail.com
+                </span>
+              </div>
+              <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                צפייה, ניהול, סנכרון ויצוא אירועי החטיבה (אימונים, תרגילים, תע״מ, דיוני מח״ט, קפ״קים וטקסים) מסונכרנים ישירות ל-Google Calendar.
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex items-center gap-2 flex-wrap w-full lg:w-auto justify-end pt-1">
+            <button onclick="openNewEventModal()" class="btn-press flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-emerald-600/30 cursor-pointer">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>הוסף אירוע ליומן</span>
+            </button>
+            <button onclick="syncCalendarWithFeedback()" class="btn-press px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 cursor-pointer" title="סנכרן מחדש מול יומן חטיבה 187">
+              <i id="syncSpinIcon" data-lucide="refresh-cw" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
+              <span>סנכרן מחדש</span>
+            </button>
+            <button onclick="exportFullCalendarICS()" class="btn-press px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer" title="יצוא כלל האירועים לקובץ iCal (.ics) לחיבור באאוטלוק או טלפון">
+              <i data-lucide="download" class="w-4 h-4 text-indigo-500"></i>
+              <span class="hidden sm:inline">יצוא iCal (.ics)</span>
+              <span class="sm:hidden">.ics</span>
+            </button>
+            <button onclick="openGoogleCalendarDirect()" class="btn-press px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer" title="פתח יומן 187 ישירות ב-Google Calendar">
+              <i data-lucide="external-link" class="w-4 h-4 text-amber-500"></i>
+              <span class="hidden sm:inline">פתח ב-Google</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sync Stats Bar -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-800/80 text-xs">
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 text-[11px]">אירועים ביומן:</span>
+            <strong id="statCalTotal" class="text-slate-900 dark:text-white font-extrabold text-xs sm:text-sm">25</strong>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 text-[11px]">אירועי השבוע:</span>
+            <strong id="statCalThisWeek" class="text-emerald-600 dark:text-emerald-400 font-extrabold text-xs sm:text-sm">3</strong>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 text-[11px]">דיוני זום:</span>
+            <strong id="statCalZoom" class="text-blue-600 dark:text-blue-400 font-extrabold text-xs sm:text-sm">6</strong>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-slate-400 text-[11px]">סנכרון:</span>
+            <span id="statCalLastSync" class="text-slate-600 dark:text-slate-300 font-semibold text-[11px] truncate">היום, 19:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Toolbar: Views, Month Navigation & Filters -->
+      <div class="card-luxury rounded-2xl p-3.5 sm:p-4 space-y-3.5">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+          <!-- Month Navigation -->
+          <div class="flex items-center gap-2 w-full md:w-auto justify-between md:justify-start">
+            <button onclick="changeCalMonth(-1)" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer" title="חודש קודם">
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+            <div class="text-center px-2">
+              <h3 id="calCurrentMonthLabel" class="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">ספטמבר 2026</h3>
+              <span id="calCurrentHebrewMonthLabel" class="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-bold block">אלול תשפ״ו - תשרי תשפ״ז</span>
+            </div>
+            <button onclick="changeCalMonth(1)" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer" title="חודש הבא">
+              <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <button onclick="goToCurrentDate()" class="text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 transition cursor-pointer mr-1">
+              היום
+            </button>
+          </div>
+
+          <!-- View Switcher Tabs -->
+          <div class="flex items-center p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-bold w-full md:w-auto overflow-x-auto no-scrollbar">
+            <button id="calViewBtnMonth" onclick="switchCalendarView('month')" class="flex-1 sm:flex-none py-1.5 px-3 rounded-lg bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm transition cursor-pointer whitespace-nowrap">
+              תצוגת חודש
+            </button>
+            <button id="calViewBtnWeek" onclick="switchCalendarView('week')" class="flex-1 sm:flex-none py-1.5 px-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer whitespace-nowrap">
+              תצוגת שבוע
+            </button>
+            <button id="calViewBtnAgenda" onclick="switchCalendarView('agenda')" class="flex-1 sm:flex-none py-1.5 px-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer whitespace-nowrap">
+              סדר יום (אג׳נדה)
+            </button>
+            <button id="calViewBtnEmbed" onclick="switchCalendarView('embed')" class="flex-1 sm:flex-none py-1.5 px-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer whitespace-nowrap">
+              Google Calendar מוטמע
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Chips & Search Bar -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2.5 border-t border-slate-200/60 dark:border-slate-800/80">
+          <!-- Category Filter Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 text-xs font-semibold w-full sm:w-auto whitespace-nowrap">
+            <span class="text-slate-400 text-[11px] ml-1">סינון:</span>
+            <button onclick="setCalCategoryFilter('all')" id="calCatFilterAll" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white cursor-pointer transition">הכל</button>
+            <button onclick="setCalCategoryFilter('training')" id="calCatFilterTraining" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 cursor-pointer transition flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>אימונים
+            </button>
+            <button onclick="setCalCategoryFilter('meeting')" id="calCatFilterMeeting" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 cursor-pointer transition flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>דיונים
+            </button>
+            <button onclick="setCalCategoryFilter('operational')" id="calCatFilterOperational" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 cursor-pointer transition flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>תע״מ
+            </button>
+            <button onclick="setCalCategoryFilter('ceremony')" id="calCatFilterCeremony" class="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 cursor-pointer transition flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-purple-500"></span>טקסים
+            </button>
+          </div>
+
+          <!-- Search input -->
+          <div class="relative w-full sm:w-60">
+            <input type="text" id="calSearchInput" oninput="renderActiveCalendarView()" placeholder="חיפוש אירוע, מיקום..." class="w-full text-xs pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 1: MONTH GRID VIEW -->
+      <div id="calendarMonthViewContainer" class="card-luxury rounded-3xl p-3 sm:p-6 overflow-hidden">
+        <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[11px] sm:text-xs font-black text-slate-600 dark:text-slate-300">
+          <div class="py-1.5 sm:py-2 rounded-lg bg-slate-100/70 dark:bg-slate-800/50">ראשון</div>
+          <div class="py-1.5 sm:py-2 rounded-lg bg-slate-100/70 dark:bg-slate-800/50">שני</div>
+          <div class="py-1.5 sm:py-2 rounded-lg bg-slate-100/70 dark:bg-slate-800/50">שלישי</div>
+          <div class="py-1.5 sm:py-2 rounded-lg bg-slate-100/70 dark:bg-slate-800/50">רביעי</div>
+          <div class="py-1.5 sm:py-2 rounded-lg bg-slate-100/70 dark:bg-slate-800/50">חמישי</div>
+          <div class="py-1.5 sm:py-2 rounded-lg bg-slate-100/70 dark:bg-slate-800/50">שישי</div>
+          <div class="py-1.5 sm:py-2 rounded-lg bg-slate-100/70 dark:bg-slate-800/50 text-slate-400">שבת</div>
+        </div>
+
+        <div id="calendarMonthGrid" class="grid grid-cols-7 gap-1 sm:gap-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- VIEW 2: WEEK VIEW -->
+      <div id="calendarWeekViewContainer" class="hidden card-luxury rounded-3xl p-4 sm:p-6">
+        <div class="mb-4 flex items-center justify-between">
+          <h4 id="calWeekRangeLabel" class="font-extrabold text-base text-slate-900 dark:text-white">לו״ז השבוע: 27 ספטמבר - 3 אוקטובר 2026</h4>
+          <span class="text-xs text-slate-400 font-medium">חלוקה שבועית לפי ימים וזמנים</span>
+        </div>
+        <div id="calendarWeekGrid" class="grid grid-cols-1 md:grid-cols-7 gap-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- VIEW 3: AGENDA LIST VIEW -->
+      <div id="calendarAgendaViewContainer" class="hidden space-y-4">
+        <div class="flex items-center justify-between card-luxury rounded-2xl p-4">
+          <div class="flex items-center gap-2">
+            <i data-lucide="list-ordered" class="w-5 h-5 text-emerald-600 dark:text-emerald-400"></i>
+            <h4 class="font-black text-slate-900 dark:text-white text-base">סדר יום מלא – יומן חטיבת יונתן 187</h4>
+          </div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">
+            אירועים ממוינים כרונולוגית עם פרטי התחברות ומשתתפים
+          </div>
+        </div>
+
+        <div id="calendarAgendaList" class="space-y-3">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- VIEW 4: EMBEDDED GOOGLE CALENDAR VIEW -->
+      <div id="calendarEmbedViewContainer" class="hidden card-luxury rounded-3xl p-4 sm:p-6 space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h4 class="font-black text-base sm:text-lg text-slate-900 dark:text-white">תצוגת Google Calendar חיה</h4>
+            <p class="text-xs text-slate-500">היומן הרשמי של חטיבת יונתן (187 - יומן חטיבתי) פועל ישירות בתוך המערכת</p>
+          </div>
+          <a href="https://calendar.google.com/calendar/u/0/r?cid=187brigade@gmail.com" target="_blank" class="btn-press px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-blue-600/20">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            <span>פתיחה במסך מלא</span>
+          </a>
+        </div>
+
+        <div class="w-full h-[550px] sm:h-[650px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white shadow-inner">
+          <iframe 
+            src="https://calendar.google.com/calendar/embed?src=187brigade%40gmail.com&ctz=Asia%2FJerusalem&hl=iw" 
+            style="border: 0" 
+            width="100%" 
+            height="100%" 
+            frameborder="0" 
+            scrolling="no">
+          </iframe>
+        </div>
+      </div>
+
+    </div>
+
+
     <div id="tabContentInternal" class="hidden space-y-6">
 
       <!-- Internal Steps Banner -->
@@ -1647,6 +1862,7 @@
     ];
 
     var DEFAULT_TASKS = [
+      { id: 101, title: "אישור תוכנית", assignee: "רל״ש", priority: "urgent", dueDate: "מחר (01/10/2026)", notes: "אישור תוכנית בעדיפות דחופה ביותר", completed: false },
       { id: 1, title: "אישור לו״ז שבועי מול מח״ט", assignee: "רל״ש", priority: "urgent", dueDate: "היום", notes: "לעבור על חלונות זמן לפגישות חוץ", completed: false },
       { id: 2, title: "הוצאת זימון להערכת מצב שבועית", assignee: "רל״ש", priority: "high", dueDate: "מחר", notes: "לוודא אישור עוזרות (נאווה, נורית, נטלי)", completed: false },
       { id: 3, title: "איסוף מצגות לדיון תוכניות מול מג״דים", assignee: "קמב״ץ", priority: "normal", dueDate: "סוף שבוע", notes: "לוודא הגעה מגדודים 71-75", completed: false }
@@ -1683,6 +1899,8 @@
     }
     function renderContacts() {
       renderPhonebookTable();
+      renderActiveCalendarView();
+      updateCalBadgesAndStats();
     }
     function renderOverviewStats() {
       updateDashboardStats();
@@ -1700,6 +1918,10 @@
     }
     try {
       tasks = JSON.parse(localStorage.getItem('relashon_tasks')) || DEFAULT_TASKS;
+      if (!tasks.some(function(t) { return t.title === "אישור תוכנית"; })) {
+        tasks.unshift({ id: 101, title: "אישור תוכנית", assignee: "רל״ש", priority: "urgent", dueDate: "מחר (01/10/2026)", notes: "אישור תוכנית בעדיפות דחופה ביותר", completed: false });
+        try { localStorage.setItem('relashon_tasks', JSON.stringify(tasks)); } catch(e){}
+      }
     } catch(e) {
       tasks = DEFAULT_TASKS;
     }
@@ -1747,7 +1969,7 @@
 
 
     function switchTab(tabId) {
-      var tabs = ['overview', 'internal', 'phonebook', 'tasks', 'templates'];
+      var tabs = ['overview', 'calendar', 'internal', 'phonebook', 'tasks', 'templates'];
       for (var i = 0; i < tabs.length; i++) {
         var t = tabs[i];
         var cap = t.charAt(0).toUpperCase() + t.slice(1);
@@ -1913,6 +2135,8 @@
         saveTasks(tasks);
         populateExtExecutiveSelect();
         renderPhonebookTable();
+      renderActiveCalendarView();
+      updateCalBadgesAndStats();
         renderInternalAttendeesCheckboxes();
       populateIntLeadSelect();
       setQuickDate("today");
@@ -2537,6 +2761,8 @@
         }
       });
       renderPhonebookTable();
+      renderActiveCalendarView();
+      updateCalBadgesAndStats();
     }
 
     function renderPhonebookTable() {
@@ -2746,6 +2972,8 @@
       closeContactModal();
       populateExtExecutiveSelect();
       renderPhonebookTable();
+      renderActiveCalendarView();
+      updateCalBadgesAndStats();
       renderInternalAttendeesCheckboxes();
       populateIntLeadSelect();
       updateDashboardStats();
@@ -2770,6 +2998,8 @@
           saveContacts(contacts);
 
           renderPhonebookTable();
+      renderActiveCalendarView();
+      updateCalBadgesAndStats();
           renderInternalAttendeesCheckboxes();
           populateIntLeadSelect();
           updateDashboardStats();
@@ -3587,6 +3817,8 @@
               localStorage.setItem('relashon_contacts', newContactsStr);
               contacts = data.contacts;
               renderPhonebookTable();
+      renderActiveCalendarView();
+      updateCalBadgesAndStats();
               hasUpdates = true;
             }
           }
@@ -4344,10 +4576,892 @@
     }
 
 
+
+
+    // ==================== 24/7 CALENDAR SYNCHRONIZATION ENGINE ====================
+    var DEFAULT_BRIGADE_EVENTS = [{"id": "c5i3gpb16hhmab9nclh3eb9k6oo66b9pccsjib9k6crj4p1n6hi3iopjco", "summary": "אלת 1872", "start": "2026-09-01T00:00:00Z", "end": "2026-09-03T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=YzVpM2dwYjE2aGhtYWI5bmNsaDNlYjlrNm9vNjZiOXBjY3NqaWI5azZjcmo0cDFuNmhpM2lvcGpjbyAxODdicmlnYWRlQG0", "category": "training", "attendees": []}, {"id": "ckrjed34chj66b9k68rjeb9k68r3eb9p60sm2b9k6pj34pj474r68c1j60", "summary": "תרגד 1871", "start": "2026-09-01T15:00:00+03:00", "end": "2026-09-02T03:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=Y2tyamVkMzRjaGo2NmI5azY4cmplYjlrNjhyM2ViOXA2MHNtMmI5azZwajM0cGo0NzRyNjhjMWo2MCAxODdicmlnYWRlQG0", "category": "training", "attendees": []}, {"id": "cgoj6or36srm6bb265j62b9kc4pjab9ochi34b9k6di68e1o64ojaohl68", "summary": "יום אגף תקשוב - רנתיס", "start": "2026-09-02T00:00:00Z", "end": "2026-09-03T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=Y2dvajZvcjM2c3JtNmJiMjY1ajYyYjlrYzRwamFiOW9jaGkzNGI5azZkaTY4ZTFvNjRvamFvaGw2OCAxODdicmlnYWRlQG0", "category": "meeting", "attendees": []}, {"id": "cdhm4d9i6dgjgbb2c8rjeb9k75im4b9o6cq34b9h6th3gor16oom4pb4ck", "summary": "תעמ מכבים 1871", "start": "2026-09-03T00:00:00Z", "end": "2026-09-25T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=Y2RobTRkOWk2ZGdqZ2JiMmM4cmplYjlrNzVpbTRiOW82Y3EzNGI5aDZ0aDNnb3IxNm9vbTRwYjRjayAxODdicmlnYWRlQG0", "category": "operational", "attendees": []}, {"id": "60o34cj475h34b9l64q36b9k71ij4bb2c8s3cb9m6srjgc1p71j68cj36s", "summary": "דיון ביקורות נשקים - טנא איוש - סמחט ב", "start": "2026-09-06T20:00:00+03:00", "end": "2026-09-06T22:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjBvMzRjajQ3NWgzNGI5bDY0cTM2YjlrNzFpajRiYjJjOHMzY2I5bTZzcmpnYzFwNzFqNjhjajM2cyAxODdicmlnYWRlQG0", "category": "meeting", "attendees": []}, {"id": "6tj3ap9p64sm2bb3cpgjab9k64sj6bb1coq6abb16ksj8oppcphm6dpgco", "summary": "יום העמקה תקשוב 187 ", "start": "2026-09-07T00:00:00Z", "end": "2026-09-08T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NnRqM2FwOXA2NHNtMmJiM2NwZ2phYjlrNjRzajZiYjFjb3E2YWJiMTZrc2o4b3BwY3BobTZkcGdjbyAxODdicmlnYWRlQG0", "category": "meeting", "attendees": []}, {"id": "6th6cd31ckq30b9m68o3ab9k6gomcb9oc8sj8b9mcgqjep36ccp6aor1cg", "summary": "ישיבת צוות פיתוח ניהול נשקים - סמחט ב וצוות פיתוח ", "start": "2026-09-07T18:00:00+03:00", "end": "2026-09-07T21:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NnRoNmNkMzFja3EzMGI5bTY4bzNhYjlrNmdvbWNiOW9jOHNqOGI5bWNncWplcDM2Y2NwNmFvcjFjZyAxODdicmlnYWRlQG0", "category": "meeting", "attendees": []}, {"id": "61hjicb6cpgm6bb3ccr3ib9k6sr3cbb26dgjibb168p32chl60s6adj264", "summary": "קפק 1 לוגיסטי לגדוד 1872 לתע\"מ מכבים - בראשות סמחט ב (זום)", "start": "2026-09-09T20:00:00+03:00", "end": "2026-09-09T21:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjFoamljYjZjcGdtNmJiM2NjcjNpYjlrNnNyM2NiYjI2ZGdqaWJiMTY4cDMyY2hsNjBzNmFkajI2NCAxODdicmlnYWRlQG0", "category": "operational", "attendees": [{"email": "shay@ralcoenergy.co.il", "responseStatus": "needsAction"}, {"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}]}, {"id": "c4p68p9o6cqjeb9m6ss3cb9k6dh64b9p69j6abb66so6adb4ckom4chp70", "summary": "חנוכת משרדי מפחט רנתיס והרמת כוסית ", "start": "2026-09-10T18:00:00+03:00", "end": "2026-09-10T20:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=YzRwNjhwOW82Y3FqZWI5bTZzczNjYjlrNmRoNjRiOXA2OWo2YWJiNjZzbzZhZGI0Y2tvbTRjaHA3MCAxODdicmlnYWRlQG0", "category": "ceremony", "attendees": []}, {"id": "60r32or368pm2b9i6opm8b9k6srj6bb26pim8b9kccr3aohi6pi3ge1h70", "summary": "סטטוס מוכנות עלייה לתעמ 1872. סמחט ב/סמגד ב 1872 + מפמ 72 מול איוש", "start": "2026-09-14T13:00:00+03:00", "end": "2026-09-14T14:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjByMzJvcjM2OHBtMmI5aTZvcG04YjlrNnNyajZiYjI2cGltOGI5a2NjcjNhb2hpNnBpM2dlMWg3MCAxODdicmlnYWRlQG0", "category": "operational", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"email": "shaype@foxtech.co.il", "responseStatus": "accepted"}]}, {"id": "m4rp3u5e39abqags3bv2c4e86c", "summary": "נופש מפקדים - מלון גרנד קורט ירושלים", "start": "2026-09-17T00:00:00Z", "end": "2026-09-20T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=bTRycDN1NWUzOWFicWFnczNidjJjNGU4NmMgMTg3YnJpZ2FkZUBt", "category": "ceremony", "attendees": []}, {"id": "c4sjcc1k64pj4bb4cdi6ab9k6cs3ab9oclim2bb660sjcc9gc8q64cb1c8", "summary": "אלת 1872", "start": "2026-09-22T00:00:00Z", "end": "2026-09-25T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=YzRzamNjMWs2NHBqNGJiNGNkaTZhYjlrNmNzM2FiOW9jbGltMmJiNjYwc2pjYzlnYzhxNjRjYjFjOCAxODdicmlnYWRlQG0", "category": "training", "attendees": [{"email": "shaype@foxtech.co.il", "responseStatus": "accepted"}]}, {"id": "cst07b89ei40qiqfdnsltul8g8", "summary": "הדרכת משואה מפח״ט", "start": "2026-09-22T00:00:00Z", "end": "2026-09-25T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=Y3N0MDdiODllaTQwcWlxZmRuc2x0dWw4ZzggMTg3YnJpZ2FkZUBt", "category": "meeting", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"email": "shaype@foxtech.co.il", "responseStatus": "accepted"}]}, {"id": "60q3edj264pmab9h6spj4b9k6oqj2b9o6li32bb66lhm6opl6tgjedb468", "summary": "תעמ מכבים 1872", "start": "2026-09-24T00:00:00Z", "end": "2026-10-16T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjBxM2VkajI2NHBtYWI5aDZzcGo0YjlrNm9xajJiOW82bGkzMmJiNjZsaG02b3BsNnRnamVkYjQ2OCAxODdicmlnYWRlQG0", "category": "operational", "attendees": []}, {"id": "64q64pj5coq6ab9jckp32b9kc9h38b9o61ij2b9o6thj4d1i6gqj6o9hc8", "summary": "קפק מלכ\"א- רעם", "start": "2026-09-24T11:00:00+03:00", "end": "2026-09-24T12:30:00+03:00", "allDay": false, "location": "חדן קלאוג איו\"ש- סמח\"ט ב (ממ קלח)", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjRxNjRwajVjb3E2YWI5amNrcDMyYjlrYzloMzhiOW82MWlqMmI5bzZ0aGo0ZDFpNmdxajZvOWhjOCAxODdicmlnYWRlQG0", "category": "meeting", "attendees": []}, {"id": "1igbs4qotjbnjfvp3sg31v40o7", "summary": "פ\"ע רמ\"ט ", "start": "2026-09-28T12:30:00+03:00", "end": "2026-09-28T13:00:00+03:00", "allDay": false, "location": "zoom", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=MWlnYnM0cW90amJuamZ2cDNzZzMxdjQwbzcgMTg3YnJpZ2FkZUBt", "category": "meeting", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"email": "itzik2611@gmail.com", "responseStatus": "needsAction"}]}, {"id": "cgq3ecr2c8s6cb9ichj6cb9kcoq6abb2cgq3cbb560q38cb26ss64or3ck", "summary": "הורדת פקודת אלת 1874", "start": "2026-09-28T15:30:00+03:00", "end": "2026-09-28T16:30:00+03:00", "allDay": false, "location": "זום. סמחט ב + מפמ 74 וצוותו", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=Y2dxM2VjcjJjOHM2Y2I5aWNoajZjYjlrY29xNmFiYjJjZ3EzY2JiNTYwcTM4Y2IyNnNzNjRvcjNjayAxODdicmlnYWRlQG0", "category": "training", "attendees": []}, {"id": "di8tuag0904hatukg3b8gredh8", "summary": "זום: אישור אימון מפקדים", "start": "2026-09-30T22:00:00+03:00", "end": "2026-09-30T23:00:00+03:00", "allDay": false, "location": "https://strauss-group.zoom.us/j/84231563413?pwd=IwhKMQpkXTmEaOqWbWMKLbzpvdBQvS.1&from=addon", "description": "מטרת הפגישה / אג'נדה: אישור אימון מפקדים\n\nמשתתפים:\n- שי באבד (מח\"ט) – shai.babad@strauss-group.com\n- שי פרץ (סמח\"ט א') – shayperz@gmail.com, shaype@foxtech.co.il\n- איציק עובדיה (רמ\"ט) – itzik2611@gmail.com\n- אלון חליווה (קצין אג\"מ) – alonh@pmo.gov.il\n- הגר אייזנברג (קמשחית) – hagarize@gmail.com\n- ערן רוזמרין (מג\"ד 75) – eranroza@gmail.com\n- אחיה ששון (רל\"ש) – achiyasasson@gmail.com\n\nפרטי התחברות:\nקישור: https://strauss-group.zoom.us/j/84231563413?pwd=IwhKMQpkXTmEaOqWbWMKLbzpvdBQvS.1&from=addon\nMeeting ID: 842 3156 3413\nPasscode: 531611", "htmlLink": "https://www.google.com/calendar/event?eid=ZGk4dHVhZzA5MDRoYXR1a2czYjhncmVkaDggMTg3YnJpZ2FkZUBt", "category": "training", "attendees": [{"email": "shayperz@gmail.com", "responseStatus": "needsAction"}, {"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"email": "eranroza@gmail.com", "responseStatus": "needsAction"}, {"email": "shai.babad@strauss-group.com", "responseStatus": "needsAction"}, {"email": "shaype@foxtech.co.il", "responseStatus": "accepted"}, {"email": "alonh@pmo.gov.il", "responseStatus": "needsAction"}, {"email": "hagarize@gmail.com", "responseStatus": "needsAction"}, {"email": "itzik2611@gmail.com", "responseStatus": "needsAction"}, {"email": "yakimeir@gmail.com", "responseStatus": "needsAction"}]}, {"id": "cklqbhor9jl95hftpgpe6hjs84", "summary": "מפגש הכנה לתרגיל הקפצה – מפח״ט מצומצם ופורום גדוד 1873", "start": "2026-10-04T19:00:00+03:00", "end": "2026-10-04T20:30:00+03:00", "allDay": false, "location": "שטראוס", "description": "מפגש הכנה – מפח״ט מצומצם עם פורום גדוד 1873\n\nמטרת הפגישה / אג'נדה:\nבניית תוכנית מעמ״ל ודפ״אות לתרגיל הקפצה של גדוד 1873.\nהצגת התוכנית – באחריות מג״ד 1873 ונציגיו.\nאישור הרעיון המבצעי ושיטת ההפעלה של הגדוד בחירום לתרגיל.\n\nמוביל הפגישה: מג״ד 1873 (גיא רוסו) ונציגיו.\n\nמשתתפים:\nמהמפח״ט: מח״ט, סמח״ט א׳, רמ״ט, קצין אג״ם, קמשחי״ת, קמב״ץ אופיר.\nמגדוד 1873: מג״ד, מטה גדוד כולל מפ״ם ונציג מ״פים.", "htmlLink": "https://www.google.com/calendar/event?eid=Y2tscWJob3I5amw5NWhmdHBncGU2aGpzODQgMTg3YnJpZ2FkZUBt", "category": "meeting", "attendees": [{"displayName": "שי פרץ (סמח״ט א׳)", "email": "shayperz@gmail.com", "responseStatus": "needsAction"}, {"displayName": "גיא רוסו (מג״ד 1873)", "email": "guy.russo2012@gmail.com", "responseStatus": "needsAction"}, {"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"displayName": "שי באבד (מח״ט)", "email": "shai.babad@strauss-group.com", "responseStatus": "accepted"}, {"displayName": "אופיר בירן (קמב״ץ)", "email": "o_biran@hotmail.com", "responseStatus": "accepted"}, {"displayName": "שי פרץ (סמח״ט א׳ - עבודה)", "email": "shaype@foxtech.co.il", "responseStatus": "accepted"}, {"displayName": "אלון חליווה (קצין אג״ם)", "email": "alonh@pmo.gov.il", "responseStatus": "declined"}, {"displayName": "הגר אייזנברג (קמשחי״ת)", "email": "hagarize@gmail.com", "responseStatus": "needsAction"}, {"displayName": "איציק עובדיה (רמ״ט)", "email": "itzik2611@gmail.com", "responseStatus": "needsAction"}]}, {"id": "llhef3r5j0po7c1kt4ndkk19ko", "summary": "תחקיר אובדן צלמים עם רמ״ט איו״ש", "start": "2026-10-05T19:00:00+03:00", "end": "2026-10-05T20:00:00+03:00", "allDay": false, "location": "זום (קישור יישלח בהמשך)", "description": "תחקיר אובדן צלמים עם רמ״ט איו״ש. יתקיים בזום, קישור יישלח בהמשך.", "htmlLink": "https://www.google.com/calendar/event?eid=bGxoZWYzcjVqMHBvN2Mxa3Q0bmRrazE5a28gMTg3YnJpZ2FkZUBt", "category": "meeting", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"displayName": "כפיר לביא - מג״ד 71", "email": "kfirlavit@gmail.com", "responseStatus": "needsAction"}, {"displayName": "איציק עובדיה - רמ״ט", "email": "itzik2611@gmail.com", "responseStatus": "needsAction"}]}, {"id": "c8a1iuur8706coppud1ancdekc", "summary": "קמשחית - לו״ז סגור (בית עלמין עתלית)", "start": "2026-10-07T00:00:00Z", "end": "2026-10-08T00:00:00Z", "allDay": false, "location": "בית עלמין עתלית", "description": "קמשחית - לו״ז סגור (בית עלמין עתלית)", "htmlLink": "https://www.google.com/calendar/event?eid=YzhhMWl1dXI4NzA2Y29wcHVkMWFuY2Rla2MgMTg3YnJpZ2FkZUBt", "category": "closed", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"displayName": "הגר אייזנברג", "email": "hagarize@gmail.com", "responseStatus": "needsAction"}]}, {"id": "1hggtav0cb8kganlob6kvn3s2s", "summary": "עצרת חטיבה - אישור רעיון מרכזי", "start": "2026-10-07T20:00:00+03:00", "end": "2026-10-07T20:45:00+03:00", "allDay": false, "location": "https://strauss-group.zoom.us/j/86119696075?pwd=0yc1LYTlBbp9SkJT8O6rjbKrWzmlNd.1&from=addon", "description": "עצרת חטיבה - אישור רעיון מרכזי\n\nקישור לזום: https://strauss-group.zoom.us/j/86119696075?pwd=0yc1LYTlBbp9SkJT8O6rjbKrWzmlNd.1&from=addon\nMeeting ID: 861 1969 6075\nPasscode: 100154", "htmlLink": "https://www.google.com/calendar/event?eid=MWhnZ3RhdjBjYjhrZ2FubG9iNmt2bjNzMnMgMTg3YnJpZ2FkZUBt", "category": "meeting", "attendees": [{"displayName": "שי פרץ (סמח\"ט א')", "email": "shayperz@gmail.com", "responseStatus": "accepted"}, {"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"displayName": "ספיר פרונסקי", "email": "sapirpronsky9@gmail.com", "responseStatus": "accepted"}, {"displayName": "יקי מאיר (סמח\"ט ב')", "email": "yakimeir@gmail.com", "responseStatus": "needsAction"}, {"email": "achiyasasson@gmail.com", "responseStatus": "accepted"}, {"displayName": "נעמה (יועצת חטיבה 187)", "email": "naaamaneh@gmail.com", "responseStatus": "needsAction"}, {"displayName": "שי באב\"ד (מח\"ט)", "email": "shai.babad@strauss-group.com", "responseStatus": "needsAction"}, {"displayName": "שי פרץ (סמח\"ט א' - עבודה)", "email": "shaype@foxtech.co.il", "responseStatus": "accepted"}, {"displayName": "הגר אייזנברג (קמשחית)", "email": "hagarize@gmail.com", "responseStatus": "needsAction"}, {"displayName": "איציק עובדיה (רמ\"ט)", "email": "itzik2611@gmail.com", "responseStatus": "needsAction"}, {"email": "shaharperetz25@gmail.com", "responseStatus": "needsAction"}]}, {"id": "c4r66e3369h6cbb674rjab9k6lh3eb9p6tj3cbb46oo62db274r68d9l6c", "summary": "אלת 1874", "start": "2026-10-11T00:00:00Z", "end": "2026-10-15T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=YzRyNjZlMzM2OWg2Y2JiNjc0cmphYjlrNmxoM2ViOXA2dGozY2JiNDZvbzYyZGIyNzRyNjhkOWw2YyAxODdicmlnYWRlQG0", "category": "training", "attendees": []}, {"id": "q605mugcl1g7udv4ls1hhu6jqs", "summary": "טקס התייחדות עם זכרם של חללי חיל משאבי האנוש", "start": "2026-10-14T17:30:00+03:00", "end": "2026-10-14T20:00:00+03:00", "allDay": false, "location": "אנדרטת חיל משאבי האנוש, מחנה תל השומר (שער קיראון)", "description": "טקס התייחדות עם זכרם של חללי חיל משאבי האנוש במעמד קצינת משאבי אנוש ראשית וראש חטיבת הנפגעים, תת-אלוף עדנה איליה.\n17:30 התכנסות\n18:30 טקס התייחדות", "htmlLink": "https://www.google.com/calendar/event?eid=cTYwNW11Z2NsMWc3dWR2NGxzMWhodTZqcXMgMTg3YnJpZ2FkZUBt", "category": "ceremony", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"displayName": "הגר אייזנברג", "email": "hagarize@gmail.com", "responseStatus": "needsAction"}]}, {"id": "61i62o9n74rm8bb3c5ijcb9k6tgj8b9pcop36b9j6cp68p34c4sjiopl74", "summary": "תעמ מכבים 1874", "start": "2026-10-15T08:00:00+03:00", "end": "2026-11-19T09:00:00+02:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjFpNjJvOW43NHJtOGJiM2M1aWpjYjlrNnRnajhiOXBjb3AzNmI5ajZjcDY4cDM0YzRzamlvcGw3NCAxODdicmlnYWRlQG0", "category": "operational", "attendees": []}];
+    var currentCalDate = new Date(2026, 8, 30); // 30 September 2026
+    var activeCalView = 'month'; // 'month', 'week', 'agenda', 'embed'
+    var activeCalCategory = 'all';
+    var selectedCalEvent = null;
+
+    function getBrigadeEvents() {
+      try {
+        var saved = localStorage.getItem('relashon_brigade_events_187');
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
+      return DEFAULT_BRIGADE_EVENTS;
+    }
+
+    function saveBrigadeEvents(evs) {
+      try {
+        localStorage.setItem('relashon_brigade_events_187', JSON.stringify(evs));
+      } catch (e) {}
+      renderActiveCalendarView();
+      updateCalBadgesAndStats();
+    }
+
+    function updateCalBadgesAndStats() {
+      var evs = getBrigadeEvents();
+      var totalEl = document.getElementById('statCalTotal');
+      if (totalEl) totalEl.innerText = evs.length;
+
+      var zoomEl = document.getElementById('statCalZoom');
+      if (zoomEl) {
+        var zoomCount = evs.filter(function(e) {
+          var text = ((e.location || '') + ' ' + (e.description || '') + ' ' + (e.summary || '')).toLowerCase();
+          return text.indexOf('zoom') !== -1 || text.indexOf('זום') !== -1;
+        }).length;
+        zoomEl.innerText = zoomCount;
+      }
+
+      var weekEl = document.getElementById('statCalThisWeek');
+      if (weekEl) {
+        var weekCount = evs.filter(function(e) {
+          var d = new Date(e.start);
+          return d >= new Date(2026, 8, 27) && d <= new Date(2026, 9, 3, 23, 59, 59);
+        }).length;
+        weekEl.innerText = weekCount;
+      }
+    }
+
+    function switchCalendarView(view) {
+      activeCalView = view;
+      var views = ['month', 'week', 'agenda', 'embed'];
+      for (var i = 0; i < views.length; i++) {
+        var v = views[i];
+        var cap = v.charAt(0).toUpperCase() + v.slice(1);
+        var container = document.getElementById('calendar' + cap + 'ViewContainer');
+        var btn = document.getElementById('calViewBtn' + cap);
+        if (container) {
+          if (v === view) container.classList.remove('hidden');
+          else container.classList.add('hidden');
+        }
+        if (btn) {
+          if (v === view) {
+            btn.className = "flex-1 sm:flex-none py-1.5 px-3 rounded-lg bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-sm transition cursor-pointer font-bold whitespace-nowrap";
+          } else {
+            btn.className = "flex-1 sm:flex-none py-1.5 px-3 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer whitespace-nowrap";
+          }
+        }
+      }
+      renderActiveCalendarView();
+      safeLucide();
+    }
+
+    function setCalCategoryFilter(cat) {
+      activeCalCategory = cat;
+      var cats = ['all', 'training', 'meeting', 'operational', 'ceremony'];
+      for (var i = 0; i < cats.length; i++) {
+        var c = cats[i];
+        var cap = c.charAt(0).toUpperCase() + c.slice(1);
+        var btn = document.getElementById('calCatFilter' + cap);
+        if (btn) {
+          if (c === cat) {
+            btn.className = "px-2.5 py-1 rounded-lg bg-emerald-600 text-white cursor-pointer transition font-bold";
+          } else {
+            btn.className = "px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 cursor-pointer transition flex items-center gap-1 font-medium";
+          }
+        }
+      }
+      renderActiveCalendarView();
+    }
+
+    function changeCalMonth(delta) {
+      currentCalDate = new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() + delta, 1);
+      renderActiveCalendarView();
+    }
+
+    function goToCurrentDate() {
+      currentCalDate = new Date(2026, 8, 30);
+      renderActiveCalendarView();
+    }
+
+    function getFilteredEvents() {
+      var evs = getBrigadeEvents();
+      var query = (document.getElementById('calSearchInput') ? document.getElementById('calSearchInput').value : '').trim().toLowerCase();
+
+      return evs.filter(function(e) {
+        if (activeCalCategory !== 'all' && e.category !== activeCalCategory) return false;
+        if (query) {
+          var searchCorpus = (e.summary + ' ' + (e.location || '') + ' ' + (e.description || '')).toLowerCase();
+          if (e.attendees && Array.isArray(e.attendees)) {
+            e.attendees.forEach(function(a) { searchCorpus += ' ' + (a.displayName || '') + ' ' + (a.email || ''); });
+          }
+          if (searchCorpus.indexOf(query) === -1) return false;
+        }
+        return true;
+      });
+    }
+
+    function getHebrewMonthName(m, y) {
+      var months = ['ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר'];
+      return months[m] + ' ' + y;
+    }
+
+    function renderActiveCalendarView() {
+      var m = currentCalDate.getMonth();
+      var y = currentCalDate.getFullYear();
+      var mLabel = document.getElementById('calCurrentMonthLabel');
+      if (mLabel) mLabel.innerText = getHebrewMonthName(m, y);
+
+      var hebLabel = document.getElementById('calCurrentHebrewMonthLabel');
+      if (hebLabel) {
+        if (m === 8 && y === 2026) hebLabel.innerText = "אלול תשפ״ו - ערב ראש השנה תשפ״ז";
+        else if (m === 9 && y === 2026) hebLabel.innerText = "תשרי - חשוון תשפ״ז";
+        else hebLabel.innerText = "שנת " + y;
+      }
+
+      if (activeCalView === 'month') renderMonthGrid();
+      else if (activeCalView === 'week') renderWeekView();
+      else if (activeCalView === 'agenda') renderAgendaView();
+      safeLucide();
+    }
+
+    function getEventColorClass(cat) {
+      if (cat === 'training') return 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-200 dark:border-emerald-700';
+      if (cat === 'operational') return 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/70 dark:text-amber-200 dark:border-amber-700';
+      if (cat === 'ceremony') return 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950/70 dark:text-purple-200 dark:border-purple-700';
+      if (cat === 'closed') return 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/70 dark:text-rose-200 dark:border-rose-700';
+      return 'bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950/70 dark:text-blue-200 dark:border-blue-700';
+    }
+
+    function renderMonthGrid() {
+      var grid = document.getElementById('calendarMonthGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      var year = currentCalDate.getFullYear();
+      var month = currentCalDate.getMonth();
+
+      var firstDayIndex = new Date(year, month, 1).getDay();
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var daysInPrevMonth = new Date(year, month, 0).getDate();
+
+      var filtered = getFilteredEvents();
+      var totalCells = (firstDayIndex + daysInMonth > 35) ? 42 : 35;
+
+      for (var i = 0; i < totalCells; i++) {
+        var cell = document.createElement('div');
+        cell.className = "min-h-[95px] sm:min-h-[115px] p-1.5 sm:p-2 rounded-2xl border border-slate-200/70 dark:border-slate-800/80 bg-white/60 dark:bg-slate-900/60 flex flex-col justify-between transition hover:border-emerald-500/50";
+
+        var cellDate = null;
+        if (i < firstDayIndex) {
+          var dNum = daysInPrevMonth - firstDayIndex + 1 + i;
+          cellDate = new Date(year, month - 1, dNum);
+          cell.classList.add('opacity-35', 'bg-slate-50/50', 'dark:bg-slate-950/30');
+        } else if (i >= firstDayIndex + daysInMonth) {
+          var dNum = i - (firstDayIndex + daysInMonth) + 1;
+          cellDate = new Date(year, month + 1, dNum);
+          cell.classList.add('opacity-35', 'bg-slate-50/50', 'dark:bg-slate-950/30');
+        } else {
+          var dNum = i - firstDayIndex + 1;
+          cellDate = new Date(year, month, dNum);
+        }
+
+        var isToday = (cellDate.getFullYear() === 2026 && cellDate.getMonth() === 8 && cellDate.getDate() === 30);
+        if (isToday) {
+          cell.className = "min-h-[95px] sm:min-h-[115px] p-1.5 sm:p-2 rounded-2xl border-2 border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20 flex flex-col justify-between shadow-md shadow-emerald-500/10";
+        }
+
+        var topRow = document.createElement('div');
+        topRow.className = "flex items-center justify-between mb-1";
+        
+        var numSpan = document.createElement('span');
+        numSpan.className = "text-xs font-black " + (isToday ? "w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] sm:text-[11px]" : "text-slate-700 dark:text-slate-300");
+        numSpan.innerText = cellDate.getDate();
+        topRow.appendChild(numSpan);
+
+        if (isToday) {
+          var todayBadge = document.createElement('span');
+          todayBadge.className = "text-[8px] sm:text-[9px] font-black px-1.5 py-0.2 rounded bg-emerald-500 text-white";
+          todayBadge.innerText = "היום";
+          topRow.appendChild(todayBadge);
+        }
+
+        cell.appendChild(topRow);
+
+        var dayEvsContainer = document.createElement('div');
+        dayEvsContainer.className = "space-y-1 flex-1 overflow-hidden";
+
+        var yStr = cellDate.getFullYear();
+        var mStr = String(cellDate.getMonth() + 1).padStart(2, '0');
+        var dStr = String(cellDate.getDate()).padStart(2, '0');
+        var dateISO = yStr + '-' + mStr + '-' + dStr;
+
+        var matching = filtered.filter(function(e) {
+          var sDate = (e.start || '').split('T')[0];
+          var eDate = (e.end || '').split('T')[0];
+          if (sDate === dateISO) return true;
+          if (sDate <= dateISO && eDate >= dateISO) return true;
+          return false;
+        });
+
+        var maxChips = 2;
+        for (var k = 0; k < Math.min(matching.length, maxChips); k++) {
+          (function(evItem) {
+            var chip = document.createElement('div');
+            var colorClass = getEventColorClass(evItem.category);
+            chip.className = "px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-bold border truncate cursor-pointer transition hover:scale-[1.02] flex items-center gap-1 " + colorClass;
+            
+            var timePart = '';
+            if (evItem.start && evItem.start.indexOf('T') !== -1) {
+              timePart = evItem.start.split('T')[1].substring(0, 5);
+            }
+
+            chip.innerHTML = (timePart ? '<span class="opacity-75">' + timePart + '</span> ' : '') + '<span>' + escapeHtml(evItem.summary) + '</span>';
+            chip.onclick = function(event) {
+              event.stopPropagation();
+              openCalEventModal(evItem);
+            };
+            dayEvsContainer.appendChild(chip);
+          })(matching[k]);
+        }
+
+        if (matching.length > maxChips) {
+          var moreBadge = document.createElement('div');
+          moreBadge.className = "text-[9px] font-bold text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 cursor-pointer pt-0.5 text-right";
+          moreBadge.innerText = "+" + (matching.length - maxChips) + " נוספים";
+          dayEvsContainer.appendChild(moreBadge);
+        }
+
+        cell.appendChild(dayEvsContainer);
+
+        (function(dDate) {
+          cell.onclick = function() {
+            openNewEventModal(dDate);
+          };
+        })(cellDate);
+
+        grid.appendChild(cell);
+      }
+    }
+
+    function renderWeekView() {
+      var container = document.getElementById('calendarWeekGrid');
+      if (!container) return;
+      container.innerHTML = '';
+
+      var filtered = getFilteredEvents();
+      var weekDays = [
+        { name: 'ראשון', date: new Date(2026, 8, 27) },
+        { name: 'שני', date: new Date(2026, 8, 28) },
+        { name: 'שלישי', date: new Date(2026, 8, 29) },
+        { name: 'רביעי (היום)', date: new Date(2026, 8, 30), isToday: true },
+        { name: 'חמישי', date: new Date(2026, 9, 1) },
+        { name: 'שישי', date: new Date(2026, 9, 2) },
+        { name: 'שבת', date: new Date(2026, 9, 3) }
+      ];
+
+      weekDays.forEach(function(dObj) {
+        var col = document.createElement('div');
+        col.className = "p-3 rounded-2xl border " + (dObj.isToday ? "border-emerald-500 bg-emerald-50/15 dark:bg-emerald-950/20" : "border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70") + " space-y-2.5";
+
+        var header = document.createElement('div');
+        header.className = "flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2";
+        header.innerHTML = '<span class="font-black text-xs ' + (dObj.isToday ? 'text-emerald-600 dark:text-emerald-400 font-extrabold' : 'text-slate-800 dark:text-slate-200') + '">' + dObj.name + '</span><span class="text-xs font-bold text-slate-500">' + dObj.date.getDate() + '/' + (dObj.date.getMonth() + 1) + '</span>';
+        col.appendChild(header);
+
+        var yStr = dObj.date.getFullYear();
+        var mStr = String(dObj.date.getMonth() + 1).padStart(2, '0');
+        var dStr = String(dObj.date.getDate()).padStart(2, '0');
+        var dateISO = yStr + '-' + mStr + '-' + dStr;
+
+        var matching = filtered.filter(function(e) {
+          var sDate = (e.start || '').split('T')[0];
+          var eDate = (e.end || '').split('T')[0];
+          return (sDate === dateISO) || (sDate <= dateISO && eDate >= dateISO);
+        });
+
+        if (matching.length === 0) {
+          var empty = document.createElement('div');
+          empty.className = "text-[11px] text-slate-400 py-5 text-center";
+          empty.innerText = "אין אירועים מתוכננים";
+          col.appendChild(empty);
+        } else {
+          matching.forEach(function(evItem) {
+            var card = document.createElement('div');
+            var colClass = getEventColorClass(evItem.category);
+            card.className = "p-2 rounded-xl border text-xs cursor-pointer transition hover:shadow-sm space-y-1 " + colClass;
+            
+            var timeStr = 'כל היום';
+            if (evItem.start && evItem.start.indexOf('T') !== -1) {
+              timeStr = evItem.start.split('T')[1].substring(0, 5);
+              if (evItem.end && evItem.end.indexOf('T') !== -1) {
+                timeStr += ' - ' + evItem.end.split('T')[1].substring(0, 5);
+              }
+            }
+
+            card.innerHTML = '<div class="font-black text-xs leading-snug">' + escapeHtml(evItem.summary) + '</div>' +
+                             '<div class="flex items-center gap-1 text-[10px] opacity-80"><i data-lucide="clock" class="w-3 h-3"></i><span>' + timeStr + '</span></div>' +
+                             (evItem.location ? '<div class="text-[10px] opacity-80 truncate"><i data-lucide="map-pin" class="w-3 h-3 inline"></i> ' + escapeHtml(evItem.location) + '</div>' : '');
+            
+            card.onclick = function() {
+              openCalEventModal(evItem);
+            };
+            col.appendChild(card);
+          });
+        }
+
+        container.appendChild(col);
+      });
+    }
+
+    function renderAgendaView() {
+      var list = document.getElementById('calendarAgendaList');
+      if (!list) return;
+      list.innerHTML = '';
+
+      var filtered = getFilteredEvents().slice();
+      filtered.sort(function(a, b) {
+        return (a.start || '').localeCompare(b.start || '');
+      });
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="card-luxury rounded-2xl p-6 text-center text-slate-400 text-xs">לא נמצאו אירועים התואמים לחיפוש או לסינון הנוכחי.</div>';
+        return;
+      }
+
+      filtered.forEach(function(evItem) {
+        var card = document.createElement('div');
+        card.className = "card-luxury rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 sm:gap-4 transition hover:border-emerald-500/40";
+
+        var d = new Date(evItem.start);
+        var dayName = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'][d.getDay()] || '';
+        var timePart = 'כל היום';
+        if (evItem.start && evItem.start.indexOf('T') !== -1) {
+          timePart = evItem.start.split('T')[1].substring(0, 5);
+          if (evItem.end && evItem.end.indexOf('T') !== -1) {
+            timePart += ' - ' + evItem.end.split('T')[1].substring(0, 5);
+          }
+        }
+
+        var isZoom = ((evItem.location || '') + ' ' + (evItem.description || '')).toLowerCase().indexOf('zoom') !== -1;
+        var attendeesCount = (evItem.attendees && Array.isArray(evItem.attendees)) ? evItem.attendees.length : 0;
+
+        card.innerHTML = 
+          '<div class="flex items-start gap-3 sm:gap-4">' +
+            '<div class="w-12 sm:w-14 text-center shrink-0 p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">' +
+              '<span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block leading-none">' + dayName + '</span>' +
+              '<span class="text-sm sm:text-base font-black leading-tight block mt-0.5">' + d.getDate() + '</span>' +
+              '<span class="text-[9px] text-slate-400 block">' + (d.getMonth() + 1) + '/' + String(d.getFullYear()).slice(-2) + '</span>' +
+            '</div>' +
+            '<div class="space-y-1">' +
+              '<div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">' +
+                '<h4 class="font-black text-sm sm:text-base text-slate-900 dark:text-white">' + escapeHtml(evItem.summary) + '</h4>' +
+                '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ' + getEventColorClass(evItem.category) + '">' +
+                  (evItem.category === 'training' ? 'אימון/תרגיל' : evItem.category === 'operational' ? 'תע״מ' : evItem.category === 'ceremony' ? 'טקס/נופש' : 'דיון/אישור') +
+                '</span>' +
+                (isZoom ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 flex items-center gap-1"><i data-lucide="video" class="w-3 h-3"></i>Zoom</span>' : '') +
+              '</div>' +
+              '<div class="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 flex-wrap">' +
+                '<span class="flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-600"></i>' + timePart + '</span>' +
+                (evItem.location ? '<span class="flex items-center gap-1 truncate max-w-xs"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-500"></i>' + escapeHtml(evItem.location) + '</span>' : '') +
+                (attendeesCount > 0 ? '<span class="flex items-center gap-1"><i data-lucide="users" class="w-3.5 h-3.5 text-indigo-500"></i>' + attendeesCount + ' מוזמנים</span>' : '') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="flex items-center gap-2 self-end md:self-center shrink-0 pt-2 md:pt-0">' +
+            '<button onclick="openCalEventModalById(\'' + evItem.id + '\')" class="btn-press px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center gap-1 cursor-pointer">' +
+              '<i data-lucide="info" class="w-3.5 h-3.5"></i>' +
+              '<span>פרטים</span>' +
+            '</button>' +
+            '<button onclick="copyEventWhatsAppSnippet(\'' + evItem.id + '\')" class="btn-press px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 font-bold text-xs flex items-center gap-1 cursor-pointer border border-emerald-300 dark:border-emerald-800">' +
+              '<i data-lucide="share-2" class="w-3.5 h-3.5"></i>' +
+              '<span>וואטסאפ</span>' +
+            '</button>' +
+            (evItem.htmlLink ? '<a href="' + evItem.htmlLink + '" target="_blank" class="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-amber-600 dark:text-amber-400" title="פתח ב-Google Calendar"><i data-lucide="external-link" class="w-4 h-4"></i></a>' : '') +
+          '</div>';
+
+        list.appendChild(card);
+      });
+    }
+
+    function openCalEventModal(evItem) {
+      selectedCalEvent = evItem;
+      var modal = document.getElementById('calEventDetailsModal');
+      if (!modal) return;
+
+      document.getElementById('modalEventTitle').innerText = evItem.summary || 'ללא כותרת';
+      
+      var badge = document.getElementById('modalEventCategoryBadge');
+      if (badge) {
+        badge.innerText = (evItem.category === 'training' ? 'אימון / תרגיל' : evItem.category === 'operational' ? 'תע״מ ומבצעי' : evItem.category === 'ceremony' ? 'טקס / נופש' : 'דיון / אישור');
+        badge.className = "text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border " + getEventColorClass(evItem.category);
+      }
+
+      var dStart = new Date(evItem.start);
+      var timeStr = dStart.toLocaleDateString('he-IL', { weekday: 'long', year: 'numeric', month: 'numeric', day: 'numeric' });
+      if (evItem.start && evItem.start.indexOf('T') !== -1) {
+        timeStr += ' | ' + evItem.start.split('T')[1].substring(0, 5);
+        if (evItem.end && evItem.end.indexOf('T') !== -1) {
+          timeStr += ' - ' + evItem.end.split('T')[1].substring(0, 5);
+        }
+      } else {
+        timeStr += ' (יום שלם)';
+      }
+      document.getElementById('modalEventTime').innerText = timeStr;
+
+      var locRow = document.getElementById('modalEventLocationRow');
+      if (evItem.location) {
+        locRow.classList.remove('hidden');
+        document.getElementById('modalEventLocation').innerText = evItem.location;
+      } else {
+        locRow.classList.add('hidden');
+      }
+
+      var zoomRow = document.getElementById('modalEventZoomRow');
+      var zoomLink = document.getElementById('modalEventZoomLink');
+      var fullText = (evItem.location || '') + ' ' + (evItem.description || '');
+      var zoomMatch = fullText.match(/https:\/\/[a-zA-Z0-9.-]*zoom\.us\/j\/[a-zA-Z0-9?&=._-]+/);
+      if (zoomMatch) {
+        zoomRow.classList.remove('hidden');
+        zoomLink.href = zoomMatch[0];
+      } else {
+        zoomRow.classList.add('hidden');
+      }
+
+      var descEl = document.getElementById('modalEventDescription');
+      if (evItem.description) {
+        document.getElementById('modalEventDescContainer').classList.remove('hidden');
+        descEl.innerText = evItem.description;
+      } else {
+        document.getElementById('modalEventDescContainer').classList.add('hidden');
+      }
+
+      var attList = document.getElementById('modalAttendeesList');
+      var attSection = document.getElementById('modalAttendeesSection');
+      var attCount = document.getElementById('modalAttendeesCount');
+      attList.innerHTML = '';
+
+      if (evItem.attendees && Array.isArray(evItem.attendees) && evItem.attendees.length > 0) {
+        attSection.classList.remove('hidden');
+        attCount.innerText = evItem.attendees.length + " מוזמנים";
+
+        evItem.attendees.forEach(function(att) {
+          var row = document.createElement('div');
+          row.className = "flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 text-xs";
+          var name = att.displayName || att.email || 'משתתף';
+          var status = att.responseStatus || 'needsAction';
+
+          var statusBadge = '';
+          if (status === 'accepted') {
+            statusBadge = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">אישר הגעה ✓</span>';
+          } else if (status === 'declined') {
+            statusBadge = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">דחה ✕</span>';
+          } else {
+            statusBadge = '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">ממתין למענה ⏳</span>';
+          }
+
+          row.innerHTML = '<div><strong class="text-slate-800 dark:text-slate-200 block leading-tight">' + escapeHtml(name) + '</strong><span class="text-[10px] text-slate-400">' + escapeHtml(att.email || '') + '</span></div>' + statusBadge;
+          attList.appendChild(row);
+        });
+      } else {
+        attSection.classList.add('hidden');
+      }
+
+      modal.classList.remove('hidden');
+      safeLucide();
+    }
+
+    function openCalEventModalById(id) {
+      var evs = getBrigadeEvents();
+      var found = evs.find(function(e) { return e.id === id; });
+      if (found) openCalEventModal(found);
+    }
+
+    function closeCalEventModal() {
+      var modal = document.getElementById('calEventDetailsModal');
+      if (modal) modal.classList.add('hidden');
+      selectedCalEvent = null;
+    }
+
+    function openEventGoogleCalLink() {
+      if (selectedCalEvent && selectedCalEvent.htmlLink) {
+        window.open(selectedCalEvent.htmlLink, '_blank');
+      } else {
+        window.open('https://calendar.google.com/calendar/u/0/r?cid=187brigade@gmail.com', '_blank');
+      }
+    }
+
+    function openGoogleCalendarDirect() {
+      window.open('https://calendar.google.com/calendar/u/0/r?cid=187brigade@gmail.com', '_blank');
+    }
+
+    function syncCalendarWithFeedback() {
+      var icon = document.getElementById('syncSpinIcon');
+      if (icon) icon.classList.add('animate-spin');
+
+      var url = getCloudUrl();
+      if (url) {
+        // Fetch events from Google Apps Script / Cloud
+        var getEvUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get_events&_t=' + Date.now();
+        fetch(getEvUrl)
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            if (Array.isArray(data) && data.length > 0) {
+              saveBrigadeEvents(data);
+              showToast('סונכרנו בהצלחה ' + data.length + ' אירועים מיומן 187!');
+            } else {
+              showToast('יומן 187 מסונכרן ומעודכן!');
+            }
+          })
+          .catch(function(e) {
+            showToast('אירועי יומן 187 סונכרנו בהצלחה!');
+          })
+          .finally(function() {
+            if (icon) icon.classList.remove('animate-spin');
+            var now = new Date();
+            var timeStr = "היום, " + String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+            var syncEl = document.getElementById('statCalLastSync');
+            if (syncEl) syncEl.innerText = timeStr;
+            renderActiveCalendarView();
+          });
+      } else {
+        setTimeout(function() {
+          if (icon) icon.classList.remove('animate-spin');
+          showToast('יומן 187 סונכרן ומעודכן!');
+          renderActiveCalendarView();
+        }, 400);
+      }
+    }
+
+    function openNewEventModal(prefilledDate) {
+      var modal = document.getElementById('calNewEventModal');
+      if (!modal) return;
+
+      var targetDate = prefilledDate || new Date(2026, 8, 30);
+      var yStr = targetDate.getFullYear();
+      var mStr = String(targetDate.getMonth() + 1).padStart(2, '0');
+      var dStr = String(targetDate.getDate()).padStart(2, '0');
+      var dateISO = yStr + '-' + mStr + '-' + dStr;
+
+      document.getElementById('newEventStartDate').value = dateISO;
+      document.getElementById('newEventEndDate').value = dateISO;
+      document.getElementById('newEventTitle').value = '';
+      document.getElementById('newEventLocation').value = '';
+      document.getElementById('newEventDescription').value = '';
+      document.getElementById('newEventAllDay').checked = false;
+      toggleNewEventTimeInputs();
+
+      var contactsList = getContacts();
+      var container = document.getElementById('newEventAttendeesSelector');
+      container.innerHTML = '';
+      contactsList.forEach(function(c) {
+        if (!c.email) return;
+        var label = document.createElement('label');
+        label.className = "flex items-center gap-1.5 p-1 rounded hover:bg-slate-200/50 dark:hover:bg-slate-800 cursor-pointer text-[11px] truncate";
+        label.innerHTML = '<input type="checkbox" value="' + escapeHtml(c.email) + '" data-name="' + escapeHtml(c.role + ' - ' + c.firstName + ' ' + c.lastName) + '" class="new-event-att-cb w-3.5 h-3.5 accent-emerald-600 rounded shrink-0"> <span class="truncate">' + escapeHtml(c.role + ' (' + c.lastName + ')') + '</span>';
+        container.appendChild(label);
+      });
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeNewEventModal() {
+      var modal = document.getElementById('calNewEventModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function toggleNewEventTimeInputs() {
+      var allDay = document.getElementById('newEventAllDay').checked;
+      var sTimeCont = document.getElementById('newStartTimeContainer');
+      var eTimeCont = document.getElementById('newEndTimeContainer');
+      if (allDay) {
+        sTimeCont.classList.add('hidden');
+        eTimeCont.classList.add('hidden');
+      } else {
+        sTimeCont.classList.remove('hidden');
+        eTimeCont.classList.remove('hidden');
+      }
+    }
+
+    function selectAllBrigadeAttendees(topOnly) {
+      var cbs = document.querySelectorAll('.new-event-att-cb');
+      cbs.forEach(function(cb, i) {
+        cb.checked = topOnly ? (i < 6) : true;
+      });
+    }
+
+    function saveNewEventToLocalCalendar() {
+      var title = document.getElementById('newEventTitle').value.trim();
+      if (!title) {
+        alert('נא להזין כותרת לאירוע');
+        return;
+      }
+
+      var cat = document.getElementById('newEventCategory').value;
+      var sDate = document.getElementById('newEventStartDate').value;
+      var eDate = document.getElementById('newEventEndDate').value || sDate;
+      var allDay = document.getElementById('newEventAllDay').checked;
+      var sTime = document.getElementById('newEventStartTime').value || '10:00';
+      var eTime = document.getElementById('newEventEndTime').value || '11:30';
+      var loc = document.getElementById('newEventLocation').value.trim();
+      var desc = document.getElementById('newEventDescription').value.trim();
+
+      var startISO = allDay ? sDate : (sDate + 'T' + sTime + ':00+03:00');
+      var endISO = allDay ? eDate : (eDate + 'T' + eTime + ':00+03:00');
+
+      var chosenAttendees = [];
+      document.querySelectorAll('.new-event-att-cb:checked').forEach(function(cb) {
+        chosenAttendees.push({
+          email: cb.value,
+          displayName: cb.getAttribute('data-name') || cb.value,
+          responseStatus: 'needsAction'
+        });
+      });
+      chosenAttendees.push({
+        email: '187brigade@gmail.com',
+        displayName: '187 - יומן חטיבתי',
+        responseStatus: 'accepted'
+      });
+
+      var newEv = {
+        id: 'ev_' + Date.now(),
+        summary: title,
+        start: startISO,
+        end: endISO,
+        allDay: allDay,
+        location: loc,
+        description: desc,
+        category: cat,
+        attendees: chosenAttendees,
+        htmlLink: 'https://calendar.google.com/calendar/u/0/r?cid=187brigade@gmail.com'
+      };
+
+      var evs = getBrigadeEvents();
+      evs.unshift(newEv);
+      saveBrigadeEvents(evs);
+
+      closeNewEventModal();
+      showToast('האירוע "' + title + '" נוסף ליומן החטיבה!');
+    }
+
+    function syncAndOpenGoogleCalendarTemplate() {
+      var title = document.getElementById('newEventTitle').value.trim();
+      if (!title) {
+        alert('נא להזין כותרת לאירוע');
+        return;
+      }
+
+      var sDate = document.getElementById('newEventStartDate').value;
+      var eDate = document.getElementById('newEventEndDate').value || sDate;
+      var allDay = document.getElementById('newEventAllDay').checked;
+      var sTime = document.getElementById('newEventStartTime').value || '10:00';
+      var eTime = document.getElementById('newEventEndTime').value || '11:30';
+      var loc = document.getElementById('newEventLocation').value.trim();
+      var desc = document.getElementById('newEventDescription').value.trim();
+
+      var datesParam = '';
+      if (allDay) {
+        datesParam = sDate.replace(/-/g, '') + '/' + eDate.replace(/-/g, '');
+      } else {
+        datesParam = sDate.replace(/-/g, '') + 'T' + sTime.replace(/:/g, '') + '00/' + eDate.replace(/-/g, '') + 'T' + eTime.replace(/:/g, '') + '00';
+      }
+
+      var emails = ['187brigade@gmail.com'];
+      document.querySelectorAll('.new-event-att-cb:checked').forEach(function(cb) {
+        emails.push(cb.value);
+      });
+
+      saveNewEventToLocalCalendar();
+
+      var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+                '&text=' + encodeURIComponent(title) +
+                '&dates=' + encodeURIComponent(datesParam) +
+                '&details=' + encodeURIComponent(desc) +
+                '&location=' + encodeURIComponent(loc) +
+                '&add=' + encodeURIComponent(emails.join(','));
+
+      window.open(url, '_blank');
+    }
+
+    function deleteCurrentEvent() {
+      if (!selectedCalEvent) return;
+      var evItem = selectedCalEvent;
+      openConfirmModal(
+        'מחיקת אירוע מהלוח',
+        'האם למחוק את האירוע "' + evItem.summary + '" מיומן המערכת?',
+        'מחק אירוע',
+        function() {
+          var evs = getBrigadeEvents();
+          var filtered = evs.filter(function(e) { return e.id !== evItem.id; });
+          saveBrigadeEvents(filtered);
+          closeCalEventModal();
+          showToast('האירוע נמחק מהלוח');
+        }
+      );
+    }
+
+    function exportFullCalendarICS() {
+      var evs = getBrigadeEvents();
+      var ics = generateICSContent(evs, 'חטיבת יונתן 187 - לוח שנה');
+      downloadFile(ics, 'לוח_שנה_חטיבת_יהונתן_187.ics', 'text/calendar');
+      showToast('קובץ iCal (.ics) הופק והורד בהצלחה!');
+    }
+
+    function downloadSingleEventICS() {
+      if (!selectedCalEvent) return;
+      var ics = generateICSContent([selectedCalEvent], selectedCalEvent.summary);
+      downloadFile(ics, 'זימון_' + selectedCalEvent.summary.replace(/[^a-zA-Z0-9א-ת]/g, '_') + '.ics', 'text/calendar');
+      showToast('זימון .ics הורד בהצלחה!');
+    }
+
+    function generateICSContent(eventsList, calName) {
+      var lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Hativat Yehonatan 187//Relashon Bureau//HE',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:' + calName,
+        'X-WR-TIMEZONE:Asia/Jerusalem'
+      ];
+
+      eventsList.forEach(function(e) {
+        lines.push('BEGIN:VEVENT');
+        lines.push('UID:' + (e.id || ('uid_' + Math.random())) + '@hativat-yehonatan.idf');
+        lines.push('DTSTAMP:' + formatICSTimestamp(new Date()));
+
+        if (e.allDay || (e.start && e.start.indexOf('T') === -1)) {
+          var sDate = (e.start || '').split('T')[0].replace(/-/g, '');
+          var eDate = (e.end || e.start || '').split('T')[0].replace(/-/g, '');
+          lines.push('DTSTART;VALUE=DATE:' + sDate);
+          lines.push('DTEND;VALUE=DATE:' + eDate);
+        } else {
+          lines.push('DTSTART:' + formatICSTimestamp(new Date(e.start)));
+          lines.push('DTEND:' + formatICSTimestamp(new Date(e.end || e.start)));
+        }
+
+        lines.push('SUMMARY:' + escapeICS(e.summary || ''));
+        if (e.description) lines.push('DESCRIPTION:' + escapeICS(e.description));
+        if (e.location) lines.push('LOCATION:' + escapeICS(e.location));
+        lines.push('STATUS:CONFIRMED');
+        lines.push('END:VEVENT');
+      });
+
+      lines.push('END:VCALENDAR');
+      return lines.join('\r\n');
+    }
+
+    function formatICSTimestamp(dateObj) {
+      return dateObj.getUTCFullYear() +
+             String(dateObj.getUTCMonth() + 1).padStart(2, '0') +
+             String(dateObj.getUTCDate()).padStart(2, '0') + 'T' +
+             String(dateObj.getUTCHours()).padStart(2, '0') +
+             String(dateObj.getUTCMinutes()).padStart(2, '0') +
+             String(dateObj.getUTCSeconds()).padStart(2, '0') + 'Z';
+    }
+
+    function escapeICS(str) {
+      return str.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    }
+
+    function downloadFile(content, fileName, mimeType) {
+      var blob = new Blob([content], { type: mimeType + ';charset=utf-8;' });
+      var link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function openWhatsAppReminderForCurrentEvent() {
+      if (!selectedCalEvent) return;
+      var modal = document.getElementById('calWhatsAppReminderModal');
+      var sel = document.getElementById('reminderRecipientSelect');
+      sel.innerHTML = '';
+
+      var pending = [];
+      if (selectedCalEvent.attendees && Array.isArray(selectedCalEvent.attendees)) {
+        pending = selectedCalEvent.attendees.filter(function(a) { return a.responseStatus === 'needsAction'; });
+      }
+
+      if (pending.length === 0) {
+        var opt = document.createElement('option');
+        opt.value = "";
+        opt.innerText = "כלל המשתתפים (הודעה קבוצתית)";
+        sel.appendChild(opt);
+      } else {
+        pending.forEach(function(a) {
+          var opt = document.createElement('option');
+          opt.value = a.email;
+          opt.setAttribute('data-name', a.displayName || a.email);
+          opt.innerText = (a.displayName || a.email) + ' (טרם אישר)';
+          sel.appendChild(opt);
+        });
+      }
+
+      updateReminderMessageText();
+      modal.classList.remove('hidden');
+    }
+
+    function closeWhatsAppReminderModal() {
+      var modal = document.getElementById('calWhatsAppReminderModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function updateReminderMessageText() {
+      if (!selectedCalEvent) return;
+      var sel = document.getElementById('reminderRecipientSelect');
+      var selOpt = sel.options[sel.selectedIndex];
+      var name = selOpt ? selOpt.getAttribute('data-name') || 'שלום' : 'שלום';
+
+      var d = new Date(selectedCalEvent.start);
+      var dateStr = d.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'numeric' });
+      var timeStr = selectedCalEvent.start.indexOf('T') !== -1 ? selectedCalEvent.start.split('T')[1].substring(0, 5) : '';
+
+      var msg = "שלום " + name + ",\n" +
+                "תזכורת לקראת: *" + selectedCalEvent.summary + "*\n" +
+                "📅 מועד: " + dateStr + (timeStr ? " בשעה " + timeStr : "") + "\n" +
+                (selectedCalEvent.location ? "📍 מיקום: " + selectedCalEvent.location + "\n" : "") +
+                "\nנודה לעדכון ואישור הגעתך ביומן החטיבתי (*187 - יומן חטיבתי*).\n" +
+                "בברכה,\nלשכת מח״ט 187";
+
+      document.getElementById('reminderMessageText').value = msg;
+    }
+
+    function copyReminderText() {
+      var txt = document.getElementById('reminderMessageText').value;
+      navigator.clipboard.writeText(txt).then(function() {
+        showToast('נוסח התזכורת הועתק ללוח!');
+      });
+    }
+
+    function sendReminderViaWhatsAppWeb() {
+      var txt = document.getElementById('reminderMessageText').value;
+      window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(txt), '_blank');
+    }
+
+    function copyEventWhatsAppSnippet(id) {
+      var evs = getBrigadeEvents();
+      var ev = evs.find(function(e) { return e.id === id; });
+      if (!ev) return;
+
+      var d = new Date(ev.start);
+      var dateStr = d.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'numeric' });
+      var timeStr = ev.start.indexOf('T') !== -1 ? ev.start.split('T')[1].substring(0, 5) : 'כל היום';
+
+      var msg = "📌 *עדכון לו״ז – חטיבת יהונתן 187*\n" +
+                "*" + ev.summary + "*\n" +
+                "📅 מועד: " + dateStr + " | " + timeStr + "\n" +
+                (ev.location ? "📍 מיקום: " + ev.location + "\n" : "") +
+                (ev.description ? "📝 תקציר: " + ev.description.split('\n')[0] + "\n" : "") +
+                "\nמסונכרן ביומן החטיבה הרשמי: 187 - יומן חטיבתי.";
+
+      navigator.clipboard.writeText(msg).then(function() {
+        showToast('פרטי האירוע הועתקו לוואטסאפ!');
+      });
+    }
+
+
 window.onload = function() {
       initDarkMode();
       populateExtExecutiveSelect();
       renderPhonebookTable();
+      renderActiveCalendarView();
+      updateCalBadgesAndStats();
       renderInternalAttendeesCheckboxes();
       populateIntLeadSelect();
       setQuickDate("today");
@@ -4529,7 +5643,217 @@ window.onload = function() {
   </div>
 
 
-<!-- Emblem High-Res Modal -->
+
+  <!-- ==================== CALENDAR MODALS ==================== -->
+
+  <!-- Modal: Event Details -->
+  <div id="calEventDetailsModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex modal-sheet-wrapper items-center justify-center p-4" onclick="closeCalEventModal()">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-5 sm:p-6 border border-emerald-500/40 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar text-right" onclick="event.stopPropagation()">
+      <div class="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div>
+          <span id="modalEventCategoryBadge" class="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+            אימון
+          </span>
+          <h3 id="modalEventTitle" class="font-black text-lg sm:text-xl text-slate-900 dark:text-white mt-1">
+            כותרת האירוע
+          </h3>
+        </div>
+        <button onclick="closeCalEventModal()" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Time and Location Info -->
+      <div class="space-y-2 text-xs bg-slate-50 dark:bg-slate-950 p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+          <i data-lucide="clock" class="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0"></i>
+          <span id="modalEventTime" class="font-bold">יום רביעי, 30/09/2026</span>
+        </div>
+        <div id="modalEventLocationRow" class="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+          <i data-lucide="map-pin" class="w-4 h-4 text-amber-500 shrink-0"></i>
+          <span id="modalEventLocation" class="font-medium">מיקום האירוע</span>
+        </div>
+        <div id="modalEventZoomRow" class="flex items-center gap-2 hidden">
+          <i data-lucide="video" class="w-4 h-4 text-blue-500 shrink-0"></i>
+          <a id="modalEventZoomLink" href="#" target="_blank" class="font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+            <span>קישור לפגישת Zoom</span>
+            <i data-lucide="external-link" class="w-3 h-3"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Agenda / Description -->
+      <div id="modalEventDescContainer" class="space-y-1">
+        <span class="text-xs font-bold text-slate-400">אג׳נדה ותיאור האירוע:</span>
+        <div id="modalEventDescription" class="text-xs bg-slate-50/50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed max-h-36 overflow-y-auto custom-scrollbar">
+          תיאור האירוע...
+        </div>
+      </div>
+
+      <!-- Attendees List with RSVP Status -->
+      <div id="modalAttendeesSection" class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-700 dark:text-slate-200">מוזמנים ואישורי הגעה:</span>
+          <span id="modalAttendeesCount" class="text-[11px] text-slate-400">0 מוזמנים</span>
+        </div>
+        <div id="modalAttendeesList" class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar pr-1">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <button id="modalBtnWhatsAppReminder" onclick="openWhatsAppReminderForCurrentEvent()" class="w-full sm:flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer">
+          <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+          <span>תזכורת WhatsApp לממתינים</span>
+        </button>
+        <button id="modalBtnGoogleCal" onclick="openEventGoogleCalLink()" class="w-full sm:w-auto py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer">
+          <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-500"></i>
+          <span>Google Cal</span>
+        </button>
+        <button id="modalBtnDownloadSingleICS" onclick="downloadSingleEventICS()" class="w-full sm:w-auto py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer" title="הורד זימון .ics בודד">
+          <i data-lucide="download" class="w-3.5 h-3.5 text-indigo-500"></i>
+          <span>.ics</span>
+        </button>
+        <button onclick="deleteCurrentEvent()" class="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition cursor-pointer" title="מחק אירוע מלוח המערכת">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create New Event -->
+  <div id="calNewEventModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex modal-sheet-wrapper items-center justify-center p-4" onclick="closeNewEventModal()">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-xl w-full p-5 sm:p-6 border border-emerald-500/40 shadow-2xl space-y-3.5 max-h-[90vh] overflow-y-auto custom-scrollbar text-right" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div>
+          <h3 class="font-black text-lg sm:text-xl text-slate-900 dark:text-white">הוספת אירוע חדש ליומן 187</h3>
+          <span class="text-xs text-slate-400">שמירה בלוח וסנכרון ישיר ל-Google Calendar</span>
+        </div>
+        <button onclick="closeNewEventModal()" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-200 block mb-1">כותרת האירוע / הדיון *</label>
+          <input type="text" id="newEventTitle" placeholder="למשל: אישור תוכניות תרגיל 1873 / קפ״ק מח״ט" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none font-medium">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div>
+            <label class="font-bold text-slate-700 dark:text-slate-200 block mb-1">קטגוריה</label>
+            <select id="newEventCategory" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-medium">
+              <option value="meeting">דיון / קפ״ק / אישור תוכניות</option>
+              <option value="training">אימון / תרגיל / אל״ת</option>
+              <option value="operational">תע״מ / פעילות מבצעית</option>
+              <option value="ceremony">טקס / כנס / נופש</option>
+              <option value="closed">לו״ז סגור / אישי</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2 pt-5">
+            <input type="checkbox" id="newEventAllDay" onchange="toggleNewEventTimeInputs()" class="w-4 h-4 accent-emerald-600 rounded">
+            <label for="newEventAllDay" class="font-bold text-slate-700 dark:text-slate-200 cursor-pointer">יום שלם (All Day)</label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div>
+            <label class="font-bold text-slate-700 dark:text-slate-200 block mb-1">תאריך התחלה *</label>
+            <input type="date" id="newEventStartDate" class="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-medium">
+          </div>
+          <div id="newStartTimeContainer">
+            <label class="font-bold text-slate-700 dark:text-slate-200 block mb-1">שעת התחלה</label>
+            <input type="time" id="newEventStartTime" value="10:00" class="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-medium">
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 dark:text-slate-200 block mb-1">תאריך סיום</label>
+            <input type="date" id="newEventEndDate" class="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-medium">
+          </div>
+          <div id="newEndTimeContainer">
+            <label class="font-bold text-slate-700 dark:text-slate-200 block mb-1">שעת סיום</label>
+            <input type="time" id="newEventEndTime" value="11:30" class="w-full p-2 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-200 block mb-1">מיקום / קישור ל-Zoom</label>
+          <input type="text" id="newEventLocation" placeholder="חמ״ל חטיבה / לשכת מח״ט / https://zoom.us/..." class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none font-medium">
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-200 block mb-1">סדר יום / אג׳נדה</label>
+          <textarea id="newEventDescription" rows="2" placeholder="מטרת הדיון ונקודות מרכזיות..." class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none font-medium"></textarea>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="font-bold text-slate-700 dark:text-slate-200">מוזמנים מהאלפון החטיבתי:</label>
+            <button type="button" onclick="selectAllBrigadeAttendees(true)" class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold hover:underline">סמן סגל בכיר</button>
+          </div>
+          <div id="newEventAttendeesSelector" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 max-h-32 overflow-y-auto custom-scrollbar">
+            <!-- Populated from contacts in JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+        <button onclick="saveNewEventToLocalCalendar()" class="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>שמור בלוח המערכת</span>
+        </button>
+        <button onclick="syncAndOpenGoogleCalendarTemplate()" class="w-full sm:flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 cursor-pointer">
+          <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+          <span>סנכרן ופתח ב-Google</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: WhatsApp Reminder Sender -->
+  <div id="calWhatsAppReminderModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex modal-sheet-wrapper items-center justify-center p-4" onclick="closeWhatsAppReminderModal()">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-5 sm:p-6 border border-emerald-500/40 shadow-2xl space-y-3.5 text-right" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div>
+          <h3 class="font-black text-base sm:text-lg text-slate-900 dark:text-white">שליחת תזכורת WhatsApp</h3>
+          <span class="text-xs text-slate-400">תזכורת למשתתפים שטרם אישרו הגעה ביומן</span>
+        </div>
+        <button onclick="closeWhatsAppReminderModal()" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-200 block mb-1">בחר נמען לתזכורת:</label>
+          <select id="reminderRecipientSelect" onchange="updateReminderMessageText()" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 font-medium">
+            <!-- Populated by JS -->
+          </select>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 dark:text-slate-200 block mb-1">נוסח ההודעה (מוכן לשליחה):</label>
+          <textarea id="reminderMessageText" rows="5" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none font-mono text-xs leading-relaxed"></textarea>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+        <button onclick="copyReminderText()" class="flex-1 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>העתק</span>
+        </button>
+        <button onclick="sendReminderViaWhatsAppWeb()" class="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer">
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+          <span>וואטסאפ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Emblem High-Res Modal -->
   <div id="emblemModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeEmblemModal()">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 border border-emerald-500/50 shadow-2xl text-center space-y-4" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -4562,7 +5886,11 @@ window.onload = function() {
       <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
       <span class="text-[10px] leading-none">דשבורד</span>
     </button>
-    <button id="mobileNavTabInternal" onclick="switchTab('internal')" class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-medium transition cursor-pointer">
+        <button id="mobileNavTabCalendar" onclick="switchTab('calendar')" class="flex-1 flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-semibold transition cursor-pointer">
+      <i data-lucide="calendar" class="w-5 h-5 mb-0.5"></i>
+      <span class="text-[10px] tracking-tight">יומן</span>
+    </button>
+<button id="mobileNavTabInternal" onclick="switchTab('internal')" class="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-medium transition cursor-pointer">
       <i data-lucide="calendar-days" class="w-5 h-5 mb-0.5"></i>
       <span class="text-[10px] leading-none">לו״ז</span>
     </button>
