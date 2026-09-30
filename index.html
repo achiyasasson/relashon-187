@@ -20,6 +20,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDK (v10 Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>
     tailwind.config = {
@@ -1705,7 +1708,7 @@
         }
       }
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1836,7 +1839,7 @@
       var isDark = document.documentElement.classList.contains('dark');
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -1914,7 +1917,7 @@
         }).join('');
       }
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -1990,7 +1993,7 @@
       regenerateExtOutputs();
       showToast('הפנייה עובדה בהצלחה!');
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -2459,7 +2462,7 @@
       document.getElementById('intOutputsContainer').classList.remove('hidden');
       showToast('התוצרים הופקו בהצלחה!');
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -2536,7 +2539,7 @@
         '</tr>';
       }).join('');
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       
       var mobileContainer = document.getElementById('phonebookMobileCards');
       if (mobileContainer) {
@@ -2608,7 +2611,7 @@
       document.getElementById('modalCategory').value = c.category || "hq";
       document.getElementById('contactModal').classList.remove('hidden');
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -2759,7 +2762,7 @@
         '</div>';
       }).join('');
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -3132,7 +3135,7 @@
       if (m) {
         m.classList.remove('hidden');
         checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
       }
     }
@@ -3149,7 +3152,7 @@
       var modal = document.getElementById('backupRestoreModal');
       if (modal) modal.classList.remove('hidden');
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -3271,22 +3274,21 @@
       var actualHash = getStoredPasswordHash();
       var isMatch = (enteredHash === actualHash);
 
-      // If local check failed, check live Cloud hash!
-      if (!isMatch && getCloudUrl()) {
+      // If local check failed, check live Firebase Firestore!
+      if (!isMatch && bureauDocRef) {
         try {
-          var cloudCheckUrl = getCloudUrl() + (getCloudUrl().indexOf('?') === -1 ? '?' : '&') + 'action=get_password&_t=' + Date.now();
-          var res = await fetch(cloudCheckUrl);
-          var cData = await res.json();
-          if (cData && (cData.passwordHash || cData.hash)) {
-            var cloudHash = cData.passwordHash || cData.hash;
-            if (enteredHash === cloudHash) {
-              isMatch = true;
-              localStorage.setItem('relashon_pw_hash', cloudHash);
-              pullDataFromCloud(true); // Pull rest of cloud data
+          var docSnap = await bureauDocRef.get();
+          if (docSnap && docSnap.exists) {
+            var fData = docSnap.data();
+            if (fData && fData.passwordHash) {
+              if (enteredHash === fData.passwordHash) {
+                isMatch = true;
+                localStorage.setItem('relashon_pw_hash', fData.passwordHash);
+              }
             }
           }
-        } catch (cloudErr) {
-          console.warn("Cloud auth check:", cloudErr);
+        } catch (fErr) {
+          console.warn("Firebase auth check:", fErr);
         }
       }
 
@@ -3333,7 +3335,7 @@
         if (icon) icon.setAttribute('data-lucide', 'eye');
       }
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -3362,7 +3364,7 @@
       document.getElementById('pwConfirmInput').value = '';
       if (modal) modal.classList.remove('hidden');
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -3404,8 +3406,324 @@
         localStorage.setItem('relashon_pw_hash', newHash);
       } catch (e) {}
 
-      syncPasswordDirectlyToCloud(newHash);
-      triggerCloudSync();
+      updateFirestorePassword(newHash);
+      pushAllDataToFirestore(false);
+      closeChangePasswordModal();
+      showToast('סיסמת הגישה עודכנה בהצלחה ונשלחה לענן!');
+    }
+
+
+
+
+    
+    
+    // ==================== FIREBASE REALTIME CLOUD DATABASE ====================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAJXZeDUJH4rmfzK4aWBa_TqPjwVrik36g",
+      authDomain: "relashon-187.firebaseapp.com",
+      projectId: "relashon-187",
+      storageBucket: "relashon-187.firebasestorage.app",
+      messagingSenderId: "114510775755",
+      appId: "1:114510775755:web:ab59ee7fdec76a3ab8a24e",
+      measurementId: "G-NLX084F3MY"
+    };
+
+    var db = null;
+    var bureauDocRef = null;
+    var isFirestoreActive = false;
+
+    function initFirebaseDatabase() {
+      try {
+        if (typeof firebase !== 'undefined' && firebase.apps && !firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        if (typeof firebase !== 'undefined' && firebase.firestore) {
+          db = firebase.firestore();
+          bureauDocRef = db.collection('bureau_data').doc('state_187');
+          isFirestoreActive = true;
+          startFirestoreRealtimeListener();
+        }
+      } catch (err) {
+        console.warn('Firebase initialization warning:', err);
+      }
+    }
+
+    function startFirestoreRealtimeListener() {
+      if (!bureauDocRef) return;
+      updateCloudSyncBadge('syncing', 'מתחבר ל-Firebase...');
+
+      bureauDocRef.onSnapshot(function(doc) {
+        if (doc && doc.exists) {
+          var data = doc.data();
+          var hasUpdates = false;
+
+          // Sync password
+          if (data.passwordHash) {
+            localStorage.setItem('relashon_pw_hash', data.passwordHash);
+          }
+
+          // Sync contacts
+          if (data.contacts && Array.isArray(data.contacts)) {
+            var currentContactsStr = localStorage.getItem('relashon_contacts');
+            var newContactsStr = JSON.stringify(data.contacts);
+            if (currentContactsStr !== newContactsStr) {
+              localStorage.setItem('relashon_contacts', newContactsStr);
+              contacts = data.contacts;
+              renderPhonebookTable();
+              hasUpdates = true;
+            }
+          }
+
+          // Sync tasks
+          if (data.tasks && Array.isArray(data.tasks)) {
+            var currentTasksStr = localStorage.getItem('relashon_tasks');
+            var newTasksStr = JSON.stringify(data.tasks);
+            if (currentTasksStr !== newTasksStr) {
+              localStorage.setItem('relashon_tasks', newTasksStr);
+              tasks = data.tasks;
+              renderTasks();
+              hasUpdates = true;
+            }
+          }
+
+          if (hasUpdates) {
+            renderOverviewStats();
+          }
+
+          updateCloudSyncBadge('success', 'Firebase פעיל 24/7');
+        } else {
+          // Document does not exist yet -> Seed with initial brigade data!
+          pushAllDataToFirestore(true);
+          updateCloudSyncBadge('success', 'Firebase מחובר');
+        }
+      }, function(error) {
+        console.warn('Firestore onSnapshot listener note:', error);
+        updateCloudSyncBadge('success', 'סנכרון מקומי פעיל');
+      });
+    }
+
+    async function pushAllDataToFirestore(silent) {
+      if (!bureauDocRef) return;
+      try {
+        var payload = {
+          lastUpdated: new Date().toISOString(),
+          brigade: "חטיבת יהונתן 187",
+          passwordHash: getStoredPasswordHash(),
+          contacts: contacts,
+          tasks: tasks
+        };
+        await bureauDocRef.set(payload, { merge: true });
+        updateCloudSyncBadge('success', 'נשמר ב-Firebase');
+        if (!silent) {
+          var now = new Date();
+          var timeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+          showToast('סונכרן בזמן אמת ב-Firebase! (' + timeStr + ')');
+        }
+      } catch (e) {
+        console.warn('Firestore push error:', e);
+      }
+    }
+
+    // Direct password updater to Firestore
+    async function updateFirestorePassword(newHash) {
+      if (!bureauDocRef) return;
+      try {
+        await bureauDocRef.set({
+          passwordHash: newHash,
+          lastUpdated: new Date().toISOString()
+        }, { merge: true });
+      } catch (e) {
+        console.warn('Firestore password set error:', e);
+      }
+    }
+
+
+    // ==================== AUTHENTICATION & ACCESS GATE (SHA-256) ====================
+    var DEFAULT_PASSWORD_HASH = "7bbbc83b16b2405a7d600c2794dd13d94ed92c7f7b7cfa25994a5ed96846faa9"; // SHA-256 of '187187'
+
+    async function sha256(message) {
+      var msgBuffer = new TextEncoder().encode(message);
+      var hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      var hashArray = Array.from(new Uint8Array(hashBuffer));
+      var hashHex = hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+      return hashHex;
+    }
+
+    function getStoredPasswordHash() {
+      try {
+        return localStorage.getItem('relashon_pw_hash') || DEFAULT_PASSWORD_HASH;
+      } catch (e) {
+        return DEFAULT_PASSWORD_HASH;
+      }
+    }
+
+    function isSystemAuthenticated() {
+      try {
+        if (sessionStorage.getItem('relashon_auth_unlocked') === 'true') return true;
+        if (localStorage.getItem('relashon_remember_auth') === 'true') return true;
+      } catch (e) {}
+      return false;
+    }
+
+    function checkInitialAuth() {
+      var screen = document.getElementById('tacticalLockScreen');
+      if (!screen) return;
+      if (isSystemAuthenticated()) {
+        screen.classList.add('hidden');
+      } else {
+        screen.classList.remove('hidden');
+        var input = document.getElementById('lockScreenPasswordInput');
+        if (input) setTimeout(function() { input.focus(); }, 150);
+      }
+    }
+
+    async function handleLockScreenSubmit(e) {
+      if (e) e.preventDefault();
+      var input = document.getElementById('lockScreenPasswordInput');
+      var errEl = document.getElementById('lockScreenError');
+      var rememberMe = document.getElementById('lockRememberMe').checked;
+      var entered = (input ? input.value : '').trim();
+
+      if (!entered) return;
+
+      var enteredHash = await sha256(entered);
+      var actualHash = getStoredPasswordHash();
+      var isMatch = (enteredHash === actualHash);
+
+      // If local check failed, check live Firebase Firestore!
+      if (!isMatch && bureauDocRef) {
+        try {
+          var docSnap = await bureauDocRef.get();
+          if (docSnap && docSnap.exists) {
+            var fData = docSnap.data();
+            if (fData && fData.passwordHash) {
+              if (enteredHash === fData.passwordHash) {
+                isMatch = true;
+                localStorage.setItem('relashon_pw_hash', fData.passwordHash);
+              }
+            }
+          }
+        } catch (fErr) {
+          console.warn("Firebase auth check:", fErr);
+        }
+      }
+
+      if (isMatch) {
+        if (errEl) errEl.classList.add('hidden');
+        try {
+          sessionStorage.setItem('relashon_auth_unlocked', 'true');
+          if (rememberMe) {
+            localStorage.setItem('relashon_remember_auth', 'true');
+          } else {
+            localStorage.removeItem('relashon_remember_auth');
+          }
+        } catch (err) {}
+
+        var screen = document.getElementById('tacticalLockScreen');
+        if (screen) {
+          screen.classList.add('opacity-0');
+          setTimeout(function() {
+            screen.classList.add('hidden');
+            screen.classList.remove('opacity-0');
+          }, 250);
+        }
+        showToast('ברוך הבא! המערכת נפתחה בהצלחה.');
+      } else {
+        if (errEl) errEl.classList.remove('hidden');
+        if (input) {
+          input.value = '';
+          input.classList.add('border-rose-500');
+          setTimeout(function() { input.classList.remove('border-rose-500'); }, 1000);
+          input.focus();
+        }
+      }
+    }
+
+    function togglePasswordVisibility() {
+      var input = document.getElementById('lockScreenPasswordInput');
+      var icon = document.getElementById('lockEyeIcon');
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        if (icon) icon.setAttribute('data-lucide', 'eye');
+      }
+      checkInitialAuth();
+      initFirebaseDatabase();
+      safeLucide();
+    }
+
+    function lockSystemNow() {
+      try {
+        sessionStorage.removeItem('relashon_auth_unlocked');
+        localStorage.removeItem('relashon_remember_auth');
+      } catch (e) {}
+
+      var screen = document.getElementById('tacticalLockScreen');
+      if (screen) {
+        screen.classList.remove('hidden');
+        var input = document.getElementById('lockScreenPasswordInput');
+        if (input) {
+          input.value = '';
+          setTimeout(function() { input.focus(); }, 100);
+        }
+      }
+      showToast('המערכת ננעלה בהצלחה');
+    }
+
+    function openChangePasswordModal() {
+      var modal = document.getElementById('changePasswordModal');
+      document.getElementById('pwCurrentInput').value = '';
+      document.getElementById('pwNewInput').value = '';
+      document.getElementById('pwConfirmInput').value = '';
+      if (modal) modal.classList.remove('hidden');
+      checkInitialAuth();
+      initFirebaseDatabase();
+      safeLucide();
+    }
+
+    function closeChangePasswordModal() {
+      var modal = document.getElementById('changePasswordModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function handleChangePasswordSubmit() {
+      var currentVal = document.getElementById('pwCurrentInput').value.trim();
+      var newVal = document.getElementById('pwNewInput').value.trim();
+      var confirmVal = document.getElementById('pwConfirmInput').value.trim();
+
+      if (!currentVal || !newVal || !confirmVal) {
+        alert('נא למלא את כל השדות');
+        return;
+      }
+
+      var currentHash = await sha256(currentVal);
+      var actualHash = getStoredPasswordHash();
+
+      if (currentHash !== actualHash) {
+        alert('הסיסמה הנוכחית שהוזנה שגויה');
+        return;
+      }
+
+      if (newVal !== confirmVal) {
+        alert('הסיסמה החדשה ואימות הסיסמה אינם תואמים');
+        return;
+      }
+
+      if (newVal.length < 4) {
+        alert('הסיסמה החדשה חייבת להכיל לפחות 4 תווים');
+        return;
+      }
+
+      var newHash = await sha256(newVal);
+      try {
+        localStorage.setItem('relashon_pw_hash', newHash);
+      } catch (e) {}
+
+      updateFirestorePassword(newHash);
+      pushAllDataToFirestore(false);
       closeChangePasswordModal();
       showToast('סיסמת הגישה עודכנה בהצלחה ונשלחה לענן!');
     }
@@ -3618,22 +3936,21 @@
       var actualHash = getStoredPasswordHash();
       var isMatch = (enteredHash === actualHash);
 
-      // If local check failed, check live Cloud hash!
-      if (!isMatch && getCloudUrl()) {
+      // If local check failed, check live Firebase Firestore!
+      if (!isMatch && bureauDocRef) {
         try {
-          var cloudCheckUrl = getCloudUrl() + (getCloudUrl().indexOf('?') === -1 ? '?' : '&') + 'action=get_password&_t=' + Date.now();
-          var res = await fetch(cloudCheckUrl);
-          var cData = await res.json();
-          if (cData && (cData.passwordHash || cData.hash)) {
-            var cloudHash = cData.passwordHash || cData.hash;
-            if (enteredHash === cloudHash) {
-              isMatch = true;
-              localStorage.setItem('relashon_pw_hash', cloudHash);
-              pullDataFromCloud(true); // Pull rest of cloud data
+          var docSnap = await bureauDocRef.get();
+          if (docSnap && docSnap.exists) {
+            var fData = docSnap.data();
+            if (fData && fData.passwordHash) {
+              if (enteredHash === fData.passwordHash) {
+                isMatch = true;
+                localStorage.setItem('relashon_pw_hash', fData.passwordHash);
+              }
             }
           }
-        } catch (cloudErr) {
-          console.warn("Cloud auth check:", cloudErr);
+        } catch (fErr) {
+          console.warn("Firebase auth check:", fErr);
         }
       }
 
@@ -3680,7 +3997,7 @@
         if (icon) icon.setAttribute('data-lucide', 'eye');
       }
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -3709,7 +4026,7 @@
       document.getElementById('pwConfirmInput').value = '';
       if (modal) modal.classList.remove('hidden');
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -3751,8 +4068,8 @@
         localStorage.setItem('relashon_pw_hash', newHash);
       } catch (e) {}
 
-      syncPasswordDirectlyToCloud(newHash);
-      triggerCloudSync();
+      updateFirestorePassword(newHash);
+      pushAllDataToFirestore(false);
       closeChangePasswordModal();
       showToast('סיסמת הגישה עודכנה בהצלחה ונשלחה לענן!');
     }
@@ -3936,7 +4253,7 @@ window.onload = function() {
       renderCustomTemplate2();
       initT2Chips();
       checkInitialAuth();
-      pullDataFromCloud(false);
+      initFirebaseDatabase();
       safeLucide();
       updateLiveClock();
       setInterval(updateLiveClock, 30000);
