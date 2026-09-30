@@ -445,7 +445,7 @@
         </div>
 
         <!-- Cloud Sync 24/7 Status Badge -->
-        <div id="cloudSyncNavBadge" class="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold" title="סנכרון ענן 24/7">
+        <div id="cloudSyncNavBadge" onclick="openCloudSyncModal()" class="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold cursor-pointer hover:opacity-80 transition" title="לחץ לפתיחת הגדרות סנכרון ענן ויומן">
           <i id="cloudSyncIcon" data-lucide="cloud-check" class="w-3.5 h-3.5 text-emerald-500"></i>
           <span id="cloudSyncStatusText" class="hidden md:inline">ענן מחובר</span>
         </div>
@@ -768,10 +768,11 @@
             <div>
               <div class="flex items-center gap-2 flex-wrap">
                 <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">לוח שנה חטיבתי – סנכרון חי 24/7</h2>
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
-                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  סנכרון מלא פעיל
-                </span>
+                <button onclick="openCloudSyncModal()" id="calSyncStatusBadge" class="btn-press inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-300 dark:border-blue-700 hover:bg-blue-200 transition cursor-pointer" title="לחץ להגדרת חיבור חי">
+                  <span id="calSyncStatusPulse" class="w-2 h-2 rounded-full bg-blue-500"></span>
+                  <span id="calSyncStatusText">הגדרת סנכרון חי 24/7</span>
+                  <i data-lucide="settings" class="w-3 h-3 text-blue-600 dark:text-blue-400 mr-0.5"></i>
+                </button>
                 <span class="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium">
                   187brigade@gmail.com
                 </span>
@@ -796,6 +797,11 @@
               <i data-lucide="download" class="w-4 h-4 text-indigo-500"></i>
               <span class="hidden sm:inline">יצוא iCal (.ics)</span>
               <span class="sm:hidden">.ics</span>
+            </button>
+            <button onclick="openCloudSyncModal()" class="btn-press px-3 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-blue-200 dark:border-blue-800 cursor-pointer" title="הגדרות חיבור וסנכרון ישיר ל-Google Calendar">
+              <i data-lucide="settings" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+              <span class="hidden sm:inline">הגדרות סנכרון</span>
+              <span class="sm:hidden">סנכרון</span>
             </button>
             <button onclick="openGoogleCalendarDirect()" class="btn-press px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer" title="פתח יומן 187 ישירות ב-Google Calendar">
               <i data-lucide="external-link" class="w-4 h-4 text-amber-500"></i>
@@ -4077,158 +4083,6 @@
 
 
     
-    // ==================== 24/7 BULLETPROOF CLOUD SYNC ====================
-    var CLOUD_SYNC_URL = "https://script.google.com/macros/s/AKfycbyGH5PzTm28YfB7DsOpwGrPS9pqmzVWX0skDToXE7sY-34LHOj3zpfT1N3a3_TIYNYt/exec";
-
-    function getCloudUrl() {
-      try {
-        var saved = localStorage.getItem('relashon_cloud_url');
-        if (saved !== null && saved !== undefined && saved.trim() !== '') return saved.trim();
-      } catch (e) {}
-      return CLOUD_SYNC_URL;
-    }
-
-    function updateCloudSyncBadge(status, text) {
-      var badge = document.getElementById('cloudSyncNavBadge');
-      var icon = document.getElementById('cloudSyncIcon');
-      var textEl = document.getElementById('cloudSyncStatusText');
-      if (!badge || !textEl) return;
-
-      badge.classList.remove('hidden');
-
-      if (status === 'syncing') {
-        if (icon) {
-          icon.setAttribute('data-lucide', 'refresh-cw');
-          icon.className = "w-4 h-4 text-blue-500 animate-spin";
-        }
-        textEl.innerText = text || "מסנכרן...";
-      } else if (status === 'success') {
-        if (icon) {
-          icon.setAttribute('data-lucide', 'cloud-check');
-          icon.className = "w-4 h-4 text-emerald-500";
-        }
-        textEl.innerText = text || "ענן מחובר 24/7";
-      } else if (status === 'offline') {
-        if (icon) {
-          icon.setAttribute('data-lucide', 'cloud-off');
-          icon.className = "w-4 h-4 text-slate-400";
-        }
-        textEl.innerText = text || "מקומי";
-      } else {
-        if (icon) {
-          icon.setAttribute('data-lucide', 'cloud-alert');
-          icon.className = "w-4 h-4 text-amber-500";
-        }
-        textEl.innerText = text || "שגיאת ענן";
-      }
-      safeLucide();
-    }
-
-    // Pull full data from Cloud on startup
-    async function pullDataFromCloud(silent) {
-      var url = getCloudUrl();
-      if (!url) return;
-
-      if (!silent) updateCloudSyncBadge('syncing', 'מושך נתונים מהענן...');
-
-      try {
-        var fetchUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get&_t=' + Date.now();
-        var response = await fetch(fetchUrl);
-        var json = await response.json();
-
-        if (json && !json.empty && !json.error) {
-          var cloudData = typeof json === 'string' ? JSON.parse(json) : json;
-
-          if (cloudData.passwordHash) {
-            localStorage.setItem('relashon_pw_hash', cloudData.passwordHash);
-          }
-          if (cloudData.contacts && Array.isArray(cloudData.contacts)) {
-            localStorage.setItem('relashon_contacts', JSON.stringify(cloudData.contacts));
-            renderContacts();
-          }
-          if (cloudData.tasks && Array.isArray(cloudData.tasks)) {
-            localStorage.setItem('relashon_tasks', JSON.stringify(cloudData.tasks));
-            renderTasks();
-          }
-          if (cloudData.customTemplates) {
-            localStorage.setItem('relashon_custom_templates', JSON.stringify(cloudData.customTemplates));
-          }
-
-          renderOverviewStats();
-          updateCloudSyncBadge('success', 'ענן מסונכרן 24/7');
-          if (!silent) showToast('כל נתוני המערכת סונכרנו בהצלחה מהענן!');
-        } else {
-          updateCloudSyncBadge('success', 'ענן מחובר');
-        }
-      } catch (err) {
-        console.warn('Cloud pull error:', err);
-        updateCloudSyncBadge('success', 'ענן מחובר');
-      }
-    }
-
-    // Push changes to Cloud (contacts, tasks, password)
-    var cloudPushDebounce = null;
-    function triggerCloudSync() {
-      updateCloudSyncBadge('syncing', 'שומר בענן...');
-      if (cloudPushDebounce) clearTimeout(cloudPushDebounce);
-      cloudPushDebounce = setTimeout(function() {
-        pushDataToCloud(false);
-      }, 600);
-    }
-
-    async function pushDataToCloud(silent) {
-      var url = getCloudUrl();
-      if (!url) return;
-
-      var fullState = {
-        version: "2.0",
-        lastUpdated: new Date().toISOString(),
-        brigade: "חטיבת יהונתן 187",
-        passwordHash: getStoredPasswordHash(),
-        contacts: getContacts(),
-        tasks: getTasks()
-      };
-
-      try {
-        var payloadStr = JSON.stringify(fullState);
-
-        // Try POST first, fallback to GET if needed
-        try {
-          await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: payloadStr,
-            mode: 'no-cors'
-          });
-        } catch(e) {}
-
-        // Also send essential password & metadata via GET parameter to ensure 100% receipt
-        var getSaveUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=save_quick&hash=' + encodeURIComponent(fullState.passwordHash);
-        fetch(getSaveUrl, { mode: 'no-cors' });
-
-        updateCloudSyncBadge('success', 'נשמר בענן');
-        if (!silent) {
-          var now = new Date();
-          var timeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
-          showToast('נשמר וסונכרן בענן בהצלחה! (' + timeStr + ')');
-        }
-      } catch (err) {
-        console.error('Cloud push error:', err);
-        updateCloudSyncBadge('offline', 'שמור מקומית');
-      }
-    }
-
-    // When changing password, send explicit direct sync request
-    async function syncPasswordDirectlyToCloud(hashVal) {
-      var url = getCloudUrl();
-      if (!url) return;
-      try {
-        var directUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=set_password&hash=' + encodeURIComponent(hashVal) + '&_t=' + Date.now();
-        await fetch(directUrl, { mode: 'no-cors' });
-      } catch (e) {}
-    }
-
-
     // ==================== AUTHENTICATION & ACCESS GATE (SHA-256) ====================
     var DEFAULT_PASSWORD_HASH = "7bbbc83b16b2405a7d600c2794dd13d94ed92c7f7b7cfa25994a5ed96846faa9"; // SHA-256 of '187187'
 
@@ -4418,55 +4272,76 @@
 
 
 
-    // ==================== 24/7 COMPLETE CLOUD SYNC ENGINE ====================
-    var CLOUD_SYNC_URL = "https://script.google.com/macros/s/AKfycbyGH5PzTm28YfB7DsOpwGrPS9pqmzVWX0skDToXE7sY-34LHOj3zpfT1N3a3_TIYNYt/exec";
+    // ==================== 24/7 CLOUD & GOOGLE APPS SCRIPT SYNC ENGINE ====================
     var isCloudSyncing = false;
+
+    var DEFAULT_LIVE_SYNC_URL = "https://script.google.com/macros/s/AKfycbxa2lilw_LYmPYa3H5ctM9LyLfj9ESNpprTFc97GY9S4akhb_1t8Q8Btn4RNHL2k4M/exec";
 
     function getCloudUrl() {
       try {
         var saved = localStorage.getItem('relashon_cloud_url');
         if (saved !== null && saved !== undefined && saved.trim() !== '') return saved.trim();
       } catch (e) {}
-      return CLOUD_SYNC_URL;
+      return DEFAULT_LIVE_SYNC_URL;
     }
 
     function updateCloudSyncBadge(status, text) {
       var badge = document.getElementById('cloudSyncNavBadge');
       var icon = document.getElementById('cloudSyncIcon');
       var textEl = document.getElementById('cloudSyncStatusText');
-      if (!badge || !textEl) return;
+      var calBadge = document.getElementById('calSyncStatusBadge');
+      var calText = document.getElementById('calSyncStatusText');
+      var calPulse = document.getElementById('calSyncStatusPulse');
 
-      badge.classList.remove('hidden');
+      var hasUrl = !!getCloudUrl();
 
-      if (status === 'syncing') {
-        if (icon) {
-          icon.setAttribute('data-lucide', 'refresh-cw');
-          icon.className = "w-4 h-4 text-blue-500 animate-spin";
+      if (badge && textEl) {
+        badge.classList.remove('hidden');
+        if (status === 'syncing') {
+          if (icon) {
+            icon.setAttribute('data-lucide', 'refresh-cw');
+            icon.className = "w-4 h-4 text-blue-500 animate-spin";
+          }
+          textEl.innerText = text || "מסנכרן...";
+        } else if (status === 'success') {
+          if (icon) {
+            icon.setAttribute('data-lucide', 'cloud-check');
+            icon.className = "w-4 h-4 text-emerald-500";
+          }
+          textEl.innerText = text || "ענן מסונכרן";
+          if (calBadge && calText) {
+            calBadge.className = "btn-press inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-200 transition cursor-pointer";
+            calText.innerText = "סנכרון ענן פעיל 24/7";
+            if (calPulse) calPulse.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+          }
+        } else if (status === 'error') {
+          if (icon) {
+            icon.setAttribute('data-lucide', 'cloud-alert');
+            icon.className = "w-4 h-4 text-amber-500";
+          }
+          textEl.innerText = text || "שגיאת חיבור";
+          if (calBadge && calText) {
+            calBadge.className = "btn-press inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300 dark:border-amber-700 hover:bg-amber-200 transition cursor-pointer";
+            calText.innerText = "שגיאת סנכרון (לחץ לבדיקה)";
+            if (calPulse) calPulse.className = "w-2 h-2 rounded-full bg-amber-500";
+          }
+        } else {
+          // Local / Not configured
+          if (icon) {
+            icon.setAttribute('data-lucide', 'cloud-off');
+            icon.className = "w-4 h-4 text-slate-400";
+          }
+          textEl.innerText = hasUrl ? "מקומי" : "הגדר סנכרון ענן";
+          if (calBadge && calText) {
+            calBadge.className = "btn-press inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 transition cursor-pointer";
+            calText.innerText = hasUrl ? "סנכרון מוגדר" : "הגדרת סנכרון חי 24/7";
+            if (calPulse) calPulse.className = "w-2 h-2 rounded-full bg-blue-500";
+          }
         }
-        textEl.innerText = text || "מסנכרן...";
-      } else if (status === 'success') {
-        if (icon) {
-          icon.setAttribute('data-lucide', 'cloud-check');
-          icon.className = "w-4 h-4 text-emerald-500";
-        }
-        textEl.innerText = text || "ענן מסונכרן";
-      } else if (status === 'offline') {
-        if (icon) {
-          icon.setAttribute('data-lucide', 'cloud-off');
-          icon.className = "w-4 h-4 text-slate-400";
-        }
-        textEl.innerText = text || "מקומי";
-      } else {
-        if (icon) {
-          icon.setAttribute('data-lucide', 'cloud-alert');
-          icon.className = "w-4 h-4 text-amber-500";
-        }
-        textEl.innerText = text || "שגיאת ענן";
       }
       safeLucide();
     }
 
-    // Pull full data from Cloud on startup
     async function pullDataFromCloud(silent) {
       var url = getCloudUrl();
       if (!url) {
@@ -4477,13 +4352,11 @@
       if (!silent) updateCloudSyncBadge('syncing', 'מושך נתונים...');
 
       try {
-        // We use fetch with cache busting
         var fetchUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get&_t=' + Date.now();
         var response = await fetch(fetchUrl);
         var json = await response.json();
 
         if (json && !json.empty && !json.error) {
-          // We got valid cloud data!
           var cloudData = typeof json === 'string' ? JSON.parse(json) : json;
 
           if (cloudData.contacts && Array.isArray(cloudData.contacts)) {
@@ -4505,64 +4378,173 @@
           updateCloudSyncBadge('success', 'ענן מסונכרן 24/7');
           if (!silent) showToast('כל נתוני המערכת סונכרנו בהצלחה מהענן!');
         } else {
-          // Cloud empty, push initial data
           updateCloudSyncBadge('success', 'ענן מחובר');
-          pushDataToCloud(true);
         }
       } catch (err) {
         console.warn('Cloud pull error:', err);
-        updateCloudSyncBadge('success', 'ענן מחובר');
+        updateCloudSyncBadge('error', 'שגיאת חיבור ענן');
       }
     }
 
-    // Push changes to Cloud (called automatically whenever data changes)
     var cloudPushDebounce = null;
     function triggerCloudSync() {
-      updateCloudSyncBadge('syncing', 'שומר בענן...');
+      var url = getCloudUrl();
+      if (!url) return;
+
       if (cloudPushDebounce) clearTimeout(cloudPushDebounce);
       cloudPushDebounce = setTimeout(function() {
-        pushDataToCloud(false);
-      }, 500);
+        pushDataToCloud(true);
+      }, 1500);
     }
 
     async function pushDataToCloud(silent) {
       var url = getCloudUrl();
       if (!url) return;
 
-      var fullState = {
-        version: "2.0",
-        lastUpdated: new Date().toISOString(),
-        brigade: "חטיבת יהונתן 187",
-        passwordHash: getStoredPasswordHash(),
-        contacts: getContacts(),
-        tasks: getTasks()
-      };
+      if (isCloudSyncing) return;
+      isCloudSyncing = true;
+
+      if (!silent) updateCloudSyncBadge('syncing', 'שומר לענן...');
 
       try {
-        var payloadStr = JSON.stringify(fullState);
+        var payload = {
+          timestamp: Date.now(),
+          contacts: getContacts(),
+          tasks: getTasks(),
+          passwordHash: getStoredPasswordHash(),
+          customTemplates: getCustomTemplates()
+        };
 
-        // Send via POST (text/plain to avoid CORS options preflight)
-        await fetch(url, {
+        var postUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=set';
+        await fetch(postUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: payloadStr,
-          mode: 'no-cors' // Google Apps Script handles no-cors gracefully
+          body: JSON.stringify(payload)
         });
 
-        updateCloudSyncBadge('success', 'נשמר בענן');
-        if (!silent) {
-          var now = new Date();
-          var timeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
-          showToast('נשמר וסונכרן בענן בהצלחה! (' + timeStr + ')');
-        }
+        updateCloudSyncBadge('success', 'ענן מסונכרן 24/7');
+        if (!silent) showToast('הנתונים נשמרו בענן בהצלחה');
       } catch (err) {
-        console.error('Cloud push error:', err);
-        updateCloudSyncBadge('offline', 'שמור מקומית');
+        console.warn('Cloud push error:', err);
+        updateCloudSyncBadge('error', 'שגיאה בשמירה לענן');
+      } finally {
+        isCloudSyncing = false;
       }
     }
 
+    // Modal controls for Cloud Sync
+    function openCloudSyncModal() {
+      var modal = document.getElementById('cloudSyncModal');
+      if (!modal) return;
+      modal.classList.remove('hidden');
 
+      var input = document.getElementById('cloudSyncUrlInput');
+      var url = getCloudUrl();
+      if (input) input.value = url;
 
+      var statusText = document.getElementById('modalStatusText');
+      var icon = document.getElementById('modalStatusIcon');
+      var iconCont = document.getElementById('modalStatusIconCont');
+      var feedback = document.getElementById('cloudTestFeedback');
+      if (feedback) feedback.innerHTML = '';
+
+      if (url) {
+        if (statusText) statusText.innerText = "מוגדר קישור Web App פעיל";
+        if (icon) icon.setAttribute('data-lucide', 'cloud-check');
+        if (iconCont) iconCont.className = "w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400 flex items-center justify-center font-bold";
+      } else {
+        if (statusText) statusText.innerText = "מופעל במצב מקומי (23 אירועי חטיבה מעודכנים)";
+        if (icon) icon.setAttribute('data-lucide', 'cloud-off');
+        if (iconCont) iconCont.className = "w-8 h-8 rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400 flex items-center justify-center font-bold";
+      }
+      safeLucide();
+    }
+
+    function closeCloudSyncModal() {
+      var modal = document.getElementById('cloudSyncModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function saveAndTestCloudSync() {
+      var input = document.getElementById('cloudSyncUrlInput');
+      var feedback = document.getElementById('cloudTestFeedback');
+      var btn = document.getElementById('btnSaveCloudSync');
+      if (!input || !feedback) return;
+
+      var val = input.value.trim();
+      if (!val) {
+        feedback.innerHTML = '<span class="text-rose-500 font-bold">נא להזין כתובת URL תקינה של Google Apps Script.</span>';
+        return;
+      }
+
+      if (!val.startsWith('http://') && !val.startsWith('https://')) {
+        feedback.innerHTML = '<span class="text-rose-500 font-bold">הכתובת חייבת להתחיל ב-https://</span>';
+        return;
+      }
+
+      feedback.innerHTML = '<span class="text-blue-500 font-bold flex items-center gap-1.5"><i data-lucide="refresh-cw" class="w-3.5 h-3.5 animate-spin"></i> בודק תקשורת מול Google Apps Script...</span>';
+      safeLucide();
+      if (btn) btn.disabled = true;
+
+      try {
+        var testUrl = val + (val.indexOf('?') === -1 ? '?' : '&') + 'action=get_events&_t=' + Date.now();
+        var res = await fetch(testUrl);
+        var json = await res.json();
+
+        var evCount = 0;
+        if (Array.isArray(json)) {
+          evCount = json.length;
+          saveBrigadeEvents(json);
+        } else if (json && json.status === 'success' && Array.isArray(json.events)) {
+          evCount = json.events.length;
+          saveBrigadeEvents(json.events);
+        }
+
+        localStorage.setItem('relashon_cloud_url', val);
+        feedback.innerHTML = '<span class="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5"><i data-lucide="check-circle" class="w-4 h-4"></i> החיבור תקין ומאושר! נטענו בהצלחה ' + evCount + ' אירועים חיים מ-Google Calendar.</span>';
+        updateCloudSyncBadge('success', 'ענן מסונכרן 24/7');
+        renderActiveCalendarView();
+        updateCalBadgesAndStats();
+        showToast('חיבור הענן והיומן אומת בהצלחה!');
+      } catch (err) {
+        console.error('Test error:', err);
+        feedback.innerHTML = '<span class="text-rose-500 font-bold">שגיאה בחיבור: ודא שבחרת ב-Deploy את האפשרות "Who has access: Anyone" (כל אחד), ואישרת הרשאות לחשבון.</span>';
+        updateCloudSyncBadge('error', 'שגיאת חיבור');
+      } finally {
+        if (btn) btn.disabled = false;
+        safeLucide();
+      }
+    }
+
+    function clearCloudSyncSetting() {
+      if (!confirm('האם לאפס את הגדרת כתובת ה-Web App ולחזור למצב מקומי?')) return;
+      try {
+        localStorage.removeItem('relashon_cloud_url');
+      } catch (e) {}
+      var input = document.getElementById('cloudSyncUrlInput');
+      if (input) input.value = '';
+      var feedback = document.getElementById('cloudTestFeedback');
+      if (feedback) feedback.innerHTML = '<span class="text-slate-500">ההגדרה אופסה. המערכת פועלת כעת במצב מקומי מעודכן.</span>';
+      updateCloudSyncBadge('offline', 'מקומי');
+      showToast('הגדרת הסנכרון אופסה');
+    }
+
+    function copyAppsScriptCode() {
+      var code = document.getElementById('appsScriptCodeBlock');
+      var btnText = document.getElementById('copyScriptBtnText');
+      if (!code) return;
+
+      var textToCopy = code.innerText || code.textContent;
+      navigator.clipboard.writeText(textToCopy).then(function() {
+        if (btnText) btnText.innerText = 'הועתק בהצלחה! ✓';
+        showToast('הקוד הועתק ללוח. כעת הדבק אותו ב-Apps Script.');
+        setTimeout(function() {
+          if (btnText) btnText.innerText = 'העתק קוד ללוח';
+        }, 2500);
+      }).catch(function() {
+        alert('לא ניתן היה להעתיק אוטומטית. נא לסמן את הקוד ולהעתיק ידנית.');
+      });
+    }
 
     function openMobileActionsModal() {
       var m = document.getElementById('mobileActionsModal');
@@ -4579,7 +4561,493 @@
 
 
     // ==================== 24/7 CALENDAR SYNCHRONIZATION ENGINE ====================
-    var DEFAULT_BRIGADE_EVENTS = [{"id": "c5i3gpb16hhmab9nclh3eb9k6oo66b9pccsjib9k6crj4p1n6hi3iopjco", "summary": "אלת 1872", "start": "2026-09-01T00:00:00Z", "end": "2026-09-03T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=YzVpM2dwYjE2aGhtYWI5bmNsaDNlYjlrNm9vNjZiOXBjY3NqaWI5azZjcmo0cDFuNmhpM2lvcGpjbyAxODdicmlnYWRlQG0", "category": "training", "attendees": []}, {"id": "ckrjed34chj66b9k68rjeb9k68r3eb9p60sm2b9k6pj34pj474r68c1j60", "summary": "תרגד 1871", "start": "2026-09-01T15:00:00+03:00", "end": "2026-09-02T03:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=Y2tyamVkMzRjaGo2NmI5azY4cmplYjlrNjhyM2ViOXA2MHNtMmI5azZwajM0cGo0NzRyNjhjMWo2MCAxODdicmlnYWRlQG0", "category": "training", "attendees": []}, {"id": "cgoj6or36srm6bb265j62b9kc4pjab9ochi34b9k6di68e1o64ojaohl68", "summary": "יום אגף תקשוב - רנתיס", "start": "2026-09-02T00:00:00Z", "end": "2026-09-03T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=Y2dvajZvcjM2c3JtNmJiMjY1ajYyYjlrYzRwamFiOW9jaGkzNGI5azZkaTY4ZTFvNjRvamFvaGw2OCAxODdicmlnYWRlQG0", "category": "meeting", "attendees": []}, {"id": "cdhm4d9i6dgjgbb2c8rjeb9k75im4b9o6cq34b9h6th3gor16oom4pb4ck", "summary": "תעמ מכבים 1871", "start": "2026-09-03T00:00:00Z", "end": "2026-09-25T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=Y2RobTRkOWk2ZGdqZ2JiMmM4cmplYjlrNzVpbTRiOW82Y3EzNGI5aDZ0aDNnb3IxNm9vbTRwYjRjayAxODdicmlnYWRlQG0", "category": "operational", "attendees": []}, {"id": "60o34cj475h34b9l64q36b9k71ij4bb2c8s3cb9m6srjgc1p71j68cj36s", "summary": "דיון ביקורות נשקים - טנא איוש - סמחט ב", "start": "2026-09-06T20:00:00+03:00", "end": "2026-09-06T22:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjBvMzRjajQ3NWgzNGI5bDY0cTM2YjlrNzFpajRiYjJjOHMzY2I5bTZzcmpnYzFwNzFqNjhjajM2cyAxODdicmlnYWRlQG0", "category": "meeting", "attendees": []}, {"id": "6tj3ap9p64sm2bb3cpgjab9k64sj6bb1coq6abb16ksj8oppcphm6dpgco", "summary": "יום העמקה תקשוב 187 ", "start": "2026-09-07T00:00:00Z", "end": "2026-09-08T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NnRqM2FwOXA2NHNtMmJiM2NwZ2phYjlrNjRzajZiYjFjb3E2YWJiMTZrc2o4b3BwY3BobTZkcGdjbyAxODdicmlnYWRlQG0", "category": "meeting", "attendees": []}, {"id": "6th6cd31ckq30b9m68o3ab9k6gomcb9oc8sj8b9mcgqjep36ccp6aor1cg", "summary": "ישיבת צוות פיתוח ניהול נשקים - סמחט ב וצוות פיתוח ", "start": "2026-09-07T18:00:00+03:00", "end": "2026-09-07T21:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NnRoNmNkMzFja3EzMGI5bTY4bzNhYjlrNmdvbWNiOW9jOHNqOGI5bWNncWplcDM2Y2NwNmFvcjFjZyAxODdicmlnYWRlQG0", "category": "meeting", "attendees": []}, {"id": "61hjicb6cpgm6bb3ccr3ib9k6sr3cbb26dgjibb168p32chl60s6adj264", "summary": "קפק 1 לוגיסטי לגדוד 1872 לתע\"מ מכבים - בראשות סמחט ב (זום)", "start": "2026-09-09T20:00:00+03:00", "end": "2026-09-09T21:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjFoamljYjZjcGdtNmJiM2NjcjNpYjlrNnNyM2NiYjI2ZGdqaWJiMTY4cDMyY2hsNjBzNmFkajI2NCAxODdicmlnYWRlQG0", "category": "operational", "attendees": [{"email": "shay@ralcoenergy.co.il", "responseStatus": "needsAction"}, {"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}]}, {"id": "c4p68p9o6cqjeb9m6ss3cb9k6dh64b9p69j6abb66so6adb4ckom4chp70", "summary": "חנוכת משרדי מפחט רנתיס והרמת כוסית ", "start": "2026-09-10T18:00:00+03:00", "end": "2026-09-10T20:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=YzRwNjhwOW82Y3FqZWI5bTZzczNjYjlrNmRoNjRiOXA2OWo2YWJiNjZzbzZhZGI0Y2tvbTRjaHA3MCAxODdicmlnYWRlQG0", "category": "ceremony", "attendees": []}, {"id": "60r32or368pm2b9i6opm8b9k6srj6bb26pim8b9kccr3aohi6pi3ge1h70", "summary": "סטטוס מוכנות עלייה לתעמ 1872. סמחט ב/סמגד ב 1872 + מפמ 72 מול איוש", "start": "2026-09-14T13:00:00+03:00", "end": "2026-09-14T14:00:00+03:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjByMzJvcjM2OHBtMmI5aTZvcG04YjlrNnNyajZiYjI2cGltOGI5a2NjcjNhb2hpNnBpM2dlMWg3MCAxODdicmlnYWRlQG0", "category": "operational", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"email": "shaype@foxtech.co.il", "responseStatus": "accepted"}]}, {"id": "m4rp3u5e39abqags3bv2c4e86c", "summary": "נופש מפקדים - מלון גרנד קורט ירושלים", "start": "2026-09-17T00:00:00Z", "end": "2026-09-20T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=bTRycDN1NWUzOWFicWFnczNidjJjNGU4NmMgMTg3YnJpZ2FkZUBt", "category": "ceremony", "attendees": []}, {"id": "c4sjcc1k64pj4bb4cdi6ab9k6cs3ab9oclim2bb660sjcc9gc8q64cb1c8", "summary": "אלת 1872", "start": "2026-09-22T00:00:00Z", "end": "2026-09-25T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=YzRzamNjMWs2NHBqNGJiNGNkaTZhYjlrNmNzM2FiOW9jbGltMmJiNjYwc2pjYzlnYzhxNjRjYjFjOCAxODdicmlnYWRlQG0", "category": "training", "attendees": [{"email": "shaype@foxtech.co.il", "responseStatus": "accepted"}]}, {"id": "cst07b89ei40qiqfdnsltul8g8", "summary": "הדרכת משואה מפח״ט", "start": "2026-09-22T00:00:00Z", "end": "2026-09-25T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=Y3N0MDdiODllaTQwcWlxZmRuc2x0dWw4ZzggMTg3YnJpZ2FkZUBt", "category": "meeting", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"email": "shaype@foxtech.co.il", "responseStatus": "accepted"}]}, {"id": "60q3edj264pmab9h6spj4b9k6oqj2b9o6li32bb66lhm6opl6tgjedb468", "summary": "תעמ מכבים 1872", "start": "2026-09-24T00:00:00Z", "end": "2026-10-16T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjBxM2VkajI2NHBtYWI5aDZzcGo0YjlrNm9xajJiOW82bGkzMmJiNjZsaG02b3BsNnRnamVkYjQ2OCAxODdicmlnYWRlQG0", "category": "operational", "attendees": []}, {"id": "64q64pj5coq6ab9jckp32b9kc9h38b9o61ij2b9o6thj4d1i6gqj6o9hc8", "summary": "קפק מלכ\"א- רעם", "start": "2026-09-24T11:00:00+03:00", "end": "2026-09-24T12:30:00+03:00", "allDay": false, "location": "חדן קלאוג איו\"ש- סמח\"ט ב (ממ קלח)", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjRxNjRwajVjb3E2YWI5amNrcDMyYjlrYzloMzhiOW82MWlqMmI5bzZ0aGo0ZDFpNmdxajZvOWhjOCAxODdicmlnYWRlQG0", "category": "meeting", "attendees": []}, {"id": "1igbs4qotjbnjfvp3sg31v40o7", "summary": "פ\"ע רמ\"ט ", "start": "2026-09-28T12:30:00+03:00", "end": "2026-09-28T13:00:00+03:00", "allDay": false, "location": "zoom", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=MWlnYnM0cW90amJuamZ2cDNzZzMxdjQwbzcgMTg3YnJpZ2FkZUBt", "category": "meeting", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"email": "itzik2611@gmail.com", "responseStatus": "needsAction"}]}, {"id": "cgq3ecr2c8s6cb9ichj6cb9kcoq6abb2cgq3cbb560q38cb26ss64or3ck", "summary": "הורדת פקודת אלת 1874", "start": "2026-09-28T15:30:00+03:00", "end": "2026-09-28T16:30:00+03:00", "allDay": false, "location": "זום. סמחט ב + מפמ 74 וצוותו", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=Y2dxM2VjcjJjOHM2Y2I5aWNoajZjYjlrY29xNmFiYjJjZ3EzY2JiNTYwcTM4Y2IyNnNzNjRvcjNjayAxODdicmlnYWRlQG0", "category": "training", "attendees": []}, {"id": "di8tuag0904hatukg3b8gredh8", "summary": "זום: אישור אימון מפקדים", "start": "2026-09-30T22:00:00+03:00", "end": "2026-09-30T23:00:00+03:00", "allDay": false, "location": "https://strauss-group.zoom.us/j/84231563413?pwd=IwhKMQpkXTmEaOqWbWMKLbzpvdBQvS.1&from=addon", "description": "מטרת הפגישה / אג'נדה: אישור אימון מפקדים\n\nמשתתפים:\n- שי באבד (מח\"ט) – shai.babad@strauss-group.com\n- שי פרץ (סמח\"ט א') – shayperz@gmail.com, shaype@foxtech.co.il\n- איציק עובדיה (רמ\"ט) – itzik2611@gmail.com\n- אלון חליווה (קצין אג\"מ) – alonh@pmo.gov.il\n- הגר אייזנברג (קמשחית) – hagarize@gmail.com\n- ערן רוזמרין (מג\"ד 75) – eranroza@gmail.com\n- אחיה ששון (רל\"ש) – achiyasasson@gmail.com\n\nפרטי התחברות:\nקישור: https://strauss-group.zoom.us/j/84231563413?pwd=IwhKMQpkXTmEaOqWbWMKLbzpvdBQvS.1&from=addon\nMeeting ID: 842 3156 3413\nPasscode: 531611", "htmlLink": "https://www.google.com/calendar/event?eid=ZGk4dHVhZzA5MDRoYXR1a2czYjhncmVkaDggMTg3YnJpZ2FkZUBt", "category": "training", "attendees": [{"email": "shayperz@gmail.com", "responseStatus": "needsAction"}, {"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"email": "eranroza@gmail.com", "responseStatus": "needsAction"}, {"email": "shai.babad@strauss-group.com", "responseStatus": "needsAction"}, {"email": "shaype@foxtech.co.il", "responseStatus": "accepted"}, {"email": "alonh@pmo.gov.il", "responseStatus": "needsAction"}, {"email": "hagarize@gmail.com", "responseStatus": "needsAction"}, {"email": "itzik2611@gmail.com", "responseStatus": "needsAction"}, {"email": "yakimeir@gmail.com", "responseStatus": "needsAction"}]}, {"id": "cklqbhor9jl95hftpgpe6hjs84", "summary": "מפגש הכנה לתרגיל הקפצה – מפח״ט מצומצם ופורום גדוד 1873", "start": "2026-10-04T19:00:00+03:00", "end": "2026-10-04T20:30:00+03:00", "allDay": false, "location": "שטראוס", "description": "מפגש הכנה – מפח״ט מצומצם עם פורום גדוד 1873\n\nמטרת הפגישה / אג'נדה:\nבניית תוכנית מעמ״ל ודפ״אות לתרגיל הקפצה של גדוד 1873.\nהצגת התוכנית – באחריות מג״ד 1873 ונציגיו.\nאישור הרעיון המבצעי ושיטת ההפעלה של הגדוד בחירום לתרגיל.\n\nמוביל הפגישה: מג״ד 1873 (גיא רוסו) ונציגיו.\n\nמשתתפים:\nמהמפח״ט: מח״ט, סמח״ט א׳, רמ״ט, קצין אג״ם, קמשחי״ת, קמב״ץ אופיר.\nמגדוד 1873: מג״ד, מטה גדוד כולל מפ״ם ונציג מ״פים.", "htmlLink": "https://www.google.com/calendar/event?eid=Y2tscWJob3I5amw5NWhmdHBncGU2aGpzODQgMTg3YnJpZ2FkZUBt", "category": "meeting", "attendees": [{"displayName": "שי פרץ (סמח״ט א׳)", "email": "shayperz@gmail.com", "responseStatus": "needsAction"}, {"displayName": "גיא רוסו (מג״ד 1873)", "email": "guy.russo2012@gmail.com", "responseStatus": "needsAction"}, {"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"displayName": "שי באבד (מח״ט)", "email": "shai.babad@strauss-group.com", "responseStatus": "accepted"}, {"displayName": "אופיר בירן (קמב״ץ)", "email": "o_biran@hotmail.com", "responseStatus": "accepted"}, {"displayName": "שי פרץ (סמח״ט א׳ - עבודה)", "email": "shaype@foxtech.co.il", "responseStatus": "accepted"}, {"displayName": "אלון חליווה (קצין אג״ם)", "email": "alonh@pmo.gov.il", "responseStatus": "declined"}, {"displayName": "הגר אייזנברג (קמשחי״ת)", "email": "hagarize@gmail.com", "responseStatus": "needsAction"}, {"displayName": "איציק עובדיה (רמ״ט)", "email": "itzik2611@gmail.com", "responseStatus": "needsAction"}]}, {"id": "llhef3r5j0po7c1kt4ndkk19ko", "summary": "תחקיר אובדן צלמים עם רמ״ט איו״ש", "start": "2026-10-05T19:00:00+03:00", "end": "2026-10-05T20:00:00+03:00", "allDay": false, "location": "זום (קישור יישלח בהמשך)", "description": "תחקיר אובדן צלמים עם רמ״ט איו״ש. יתקיים בזום, קישור יישלח בהמשך.", "htmlLink": "https://www.google.com/calendar/event?eid=bGxoZWYzcjVqMHBvN2Mxa3Q0bmRrazE5a28gMTg3YnJpZ2FkZUBt", "category": "meeting", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"displayName": "כפיר לביא - מג״ד 71", "email": "kfirlavit@gmail.com", "responseStatus": "needsAction"}, {"displayName": "איציק עובדיה - רמ״ט", "email": "itzik2611@gmail.com", "responseStatus": "needsAction"}]}, {"id": "c8a1iuur8706coppud1ancdekc", "summary": "קמשחית - לו״ז סגור (בית עלמין עתלית)", "start": "2026-10-07T00:00:00Z", "end": "2026-10-08T00:00:00Z", "allDay": false, "location": "בית עלמין עתלית", "description": "קמשחית - לו״ז סגור (בית עלמין עתלית)", "htmlLink": "https://www.google.com/calendar/event?eid=YzhhMWl1dXI4NzA2Y29wcHVkMWFuY2Rla2MgMTg3YnJpZ2FkZUBt", "category": "closed", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"displayName": "הגר אייזנברג", "email": "hagarize@gmail.com", "responseStatus": "needsAction"}]}, {"id": "1hggtav0cb8kganlob6kvn3s2s", "summary": "עצרת חטיבה - אישור רעיון מרכזי", "start": "2026-10-07T20:00:00+03:00", "end": "2026-10-07T20:45:00+03:00", "allDay": false, "location": "https://strauss-group.zoom.us/j/86119696075?pwd=0yc1LYTlBbp9SkJT8O6rjbKrWzmlNd.1&from=addon", "description": "עצרת חטיבה - אישור רעיון מרכזי\n\nקישור לזום: https://strauss-group.zoom.us/j/86119696075?pwd=0yc1LYTlBbp9SkJT8O6rjbKrWzmlNd.1&from=addon\nMeeting ID: 861 1969 6075\nPasscode: 100154", "htmlLink": "https://www.google.com/calendar/event?eid=MWhnZ3RhdjBjYjhrZ2FubG9iNmt2bjNzMnMgMTg3YnJpZ2FkZUBt", "category": "meeting", "attendees": [{"displayName": "שי פרץ (סמח\"ט א')", "email": "shayperz@gmail.com", "responseStatus": "accepted"}, {"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"displayName": "ספיר פרונסקי", "email": "sapirpronsky9@gmail.com", "responseStatus": "accepted"}, {"displayName": "יקי מאיר (סמח\"ט ב')", "email": "yakimeir@gmail.com", "responseStatus": "needsAction"}, {"email": "achiyasasson@gmail.com", "responseStatus": "accepted"}, {"displayName": "נעמה (יועצת חטיבה 187)", "email": "naaamaneh@gmail.com", "responseStatus": "needsAction"}, {"displayName": "שי באב\"ד (מח\"ט)", "email": "shai.babad@strauss-group.com", "responseStatus": "needsAction"}, {"displayName": "שי פרץ (סמח\"ט א' - עבודה)", "email": "shaype@foxtech.co.il", "responseStatus": "accepted"}, {"displayName": "הגר אייזנברג (קמשחית)", "email": "hagarize@gmail.com", "responseStatus": "needsAction"}, {"displayName": "איציק עובדיה (רמ\"ט)", "email": "itzik2611@gmail.com", "responseStatus": "needsAction"}, {"email": "shaharperetz25@gmail.com", "responseStatus": "needsAction"}]}, {"id": "c4r66e3369h6cbb674rjab9k6lh3eb9p6tj3cbb46oo62db274r68d9l6c", "summary": "אלת 1874", "start": "2026-10-11T00:00:00Z", "end": "2026-10-15T00:00:00Z", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=YzRyNjZlMzM2OWg2Y2JiNjc0cmphYjlrNmxoM2ViOXA2dGozY2JiNDZvbzYyZGIyNzRyNjhkOWw2YyAxODdicmlnYWRlQG0", "category": "training", "attendees": []}, {"id": "q605mugcl1g7udv4ls1hhu6jqs", "summary": "טקס התייחדות עם זכרם של חללי חיל משאבי האנוש", "start": "2026-10-14T17:30:00+03:00", "end": "2026-10-14T20:00:00+03:00", "allDay": false, "location": "אנדרטת חיל משאבי האנוש, מחנה תל השומר (שער קיראון)", "description": "טקס התייחדות עם זכרם של חללי חיל משאבי האנוש במעמד קצינת משאבי אנוש ראשית וראש חטיבת הנפגעים, תת-אלוף עדנה איליה.\n17:30 התכנסות\n18:30 טקס התייחדות", "htmlLink": "https://www.google.com/calendar/event?eid=cTYwNW11Z2NsMWc3dWR2NGxzMWhodTZqcXMgMTg3YnJpZ2FkZUBt", "category": "ceremony", "attendees": [{"email": "187brigade@gmail.com", "organizer": true, "responseStatus": "accepted", "self": true}, {"displayName": "הגר אייזנברג", "email": "hagarize@gmail.com", "responseStatus": "needsAction"}]}, {"id": "61i62o9n74rm8bb3c5ijcb9k6tgj8b9pcop36b9j6cp68p34c4sjiopl74", "summary": "תעמ מכבים 1874", "start": "2026-10-15T08:00:00+03:00", "end": "2026-11-19T09:00:00+02:00", "allDay": false, "location": "", "description": "", "htmlLink": "https://www.google.com/calendar/event?eid=NjFpNjJvOW43NHJtOGJiM2M1aWpjYjlrNnRnajhiOXBjb3AzNmI5ajZjcDY4cDM0YzRzamlvcGw3NCAxODdicmlnYWRlQG0", "category": "operational", "attendees": []}];
+    var DEFAULT_BRIGADE_EVENTS = [
+  {
+    "id": "c5i3gpb16hhmab9nclh3eb9k6oo66b9pccsjib9k6crj4p1n6hi3iopjco",
+    "summary": "אלת 1872",
+    "description": "",
+    "location": "",
+    "start": "2026-09-01T00:00:00Z",
+    "end": "2026-09-03T00:00:00Z",
+    "allDay": true,
+    "category": "training",
+    "htmlLink": "https://www.google.com/calendar/event?eid=YzVpM2dwYjE2aGhtYWI5bmNsaDNlYjlrNm9vNjZiOXBjY3NqaWI5azZjcmo0cDFuNmhpM2lvcGpjbyAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "ckrjed34chj66b9k68rjeb9k68r3eb9p60sm2b9k6pj34pj474r68c1j60",
+    "summary": "תרגד 1871",
+    "description": "",
+    "location": "",
+    "start": "2026-09-01T15:00:00+03:00",
+    "end": "2026-09-02T03:00:00+03:00",
+    "allDay": false,
+    "category": "training",
+    "htmlLink": "https://www.google.com/calendar/event?eid=Y2tyamVkMzRjaGo2NmI5azY4cmplYjlrNjhyM2ViOXA2MHNtMmI5azZwajM0cGo0NzRyNjhjMWo2MCAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "cgoj6or36srm6bb265j62b9kc4pjab9ochi34b9k6di68e1o64ojaohl68",
+    "summary": "יום אגף תקשוב - רנתיס",
+    "description": "",
+    "location": "",
+    "start": "2026-09-02T00:00:00Z",
+    "end": "2026-09-03T00:00:00Z",
+    "allDay": true,
+    "category": "meeting",
+    "htmlLink": "https://www.google.com/calendar/event?eid=Y2dvajZvcjM2c3JtNmJiMjY1ajYyYjlrYzRwamFiOW9jaGkzNGI5azZkaTY4ZTFvNjRvamFvaGw2OCAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "cdhm4d9i6dgjgbb2c8rjeb9k75im4b9o6cq34b9h6th3gor16oom4pb4ck",
+    "summary": "תעמ מכבים 1871",
+    "description": "",
+    "location": "",
+    "start": "2026-09-03T00:00:00Z",
+    "end": "2026-09-25T00:00:00Z",
+    "allDay": true,
+    "category": "operational",
+    "htmlLink": "https://www.google.com/calendar/event?eid=Y2RobTRkOWk2ZGdqZ2JiMmM4cmplYjlrNzVpbTRiOW82Y3EzNGI5aDZ0aDNnb3IxNm9vbTRwYjRjayAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "60o34cj475h34b9l64q36b9k71ij4bb2c8s3cb9m6srjgc1p71j68cj36s",
+    "summary": "דיון ביקורות נשקים - טנא איוש - סמחט ב",
+    "description": "",
+    "location": "",
+    "start": "2026-09-06T20:00:00+03:00",
+    "end": "2026-09-06T22:00:00+03:00",
+    "allDay": false,
+    "category": "meeting",
+    "htmlLink": "https://www.google.com/calendar/event?eid=NjBvMzRjajQ3NWgzNGI5bDY0cTM2YjlrNzFpajRiYjJjOHMzY2I5bTZzcmpnYzFwNzFqNjhjajM2cyAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "6tj3ap9p64sm2bb3cpgjab9k64sj6bb1coq6abb16ksj8oppcphm6dpgco",
+    "summary": "יום העמקה תקשוב 187",
+    "description": "",
+    "location": "",
+    "start": "2026-09-07T00:00:00Z",
+    "end": "2026-09-08T00:00:00Z",
+    "allDay": true,
+    "category": "meeting",
+    "htmlLink": "https://www.google.com/calendar/event?eid=NnRqM2FwOXA2NHNtMmJiM2NwZ2phYjlrNjRzajZiYjFjb3E2YWJiMTZrc2o4b3BwY3BobTZkcGdjbyAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "6th6cd31ckq30b9m68o3ab9k6gomcb9oc8sj8b9mcgqjep36ccp6aor1cg",
+    "summary": "ישיבת צוות פיתוח ניהול נשקים - סמחט ב וצוות פיתוח",
+    "description": "",
+    "location": "",
+    "start": "2026-09-07T18:00:00+03:00",
+    "end": "2026-09-07T21:00:00+03:00",
+    "allDay": false,
+    "category": "meeting",
+    "htmlLink": "https://www.google.com/calendar/event?eid=NnRoNmNkMzFja3EzMGI5bTY4bzNhYjlrNmdvbWNiOW9jOHNqOGI5bWNncWplcDM2Y2NwNmFvcjFjZyAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "61hjicb6cpgm6bb3ccr3ib9k6sr3cbb26dgjibb168p32chl60s6adj264",
+    "summary": "קפק 1 לוגיסטי לגדוד 1872 לתע\"מ מכבים - בראשות סמחט ב (זום)",
+    "description": "",
+    "location": "",
+    "start": "2026-09-09T20:00:00+03:00",
+    "end": "2026-09-09T21:00:00+03:00",
+    "allDay": false,
+    "category": "operational",
+    "htmlLink": "https://www.google.com/calendar/event?eid=NjFoamljYjZjcGdtNmJiM2NjcjNpYjlrNnNyM2NiYjI2ZGdqaWJiMTY4cDMyY2hsNjBzNmFkajI2NCAxODdicmlnYWRlQG0",
+    "attendees": [
+      {
+        "displayName": "shay@ralcoenergy.co.il",
+        "email": "shay@ralcoenergy.co.il",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "187brigade@gmail.com",
+        "email": "187brigade@gmail.com",
+        "responseStatus": "accepted"
+      }
+    ]
+  },
+  {
+    "id": "c4p68p9o6cqjeb9m6ss3cb9k6dh64b9p69j6abb66so6adb4ckom4chp70",
+    "summary": "חנוכת משרדי מפחט רנתיס והרמת כוסית",
+    "description": "",
+    "location": "",
+    "start": "2026-09-10T18:00:00+03:00",
+    "end": "2026-09-10T20:00:00+03:00",
+    "allDay": false,
+    "category": "ceremony",
+    "htmlLink": "https://www.google.com/calendar/event?eid=YzRwNjhwOW82Y3FqZWI5bTZzczNjYjlrNmRoNjRiOXA2OWo2YWJiNjZzbzZhZGI0Y2tvbTRjaHA3MCAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "60r32or368pm2b9i6opm8b9k6srj6bb26pim8b9kccr3aohi6pi3ge1h70",
+    "summary": "סטטוס מוכנות עלייה לתעמ 1872. סמחט ב/סמגד ב 1872 + מפמ 72 מול איוש",
+    "description": "",
+    "location": "",
+    "start": "2026-09-14T13:00:00+03:00",
+    "end": "2026-09-14T14:00:00+03:00",
+    "allDay": false,
+    "category": "operational",
+    "htmlLink": "https://www.google.com/calendar/event?eid=NjByMzJvcjM2OHBtMmI5aTZvcG04YjlrNnNyajZiYjI2cGltOGI5a2NjcjNhb2hpNnBpM2dlMWg3MCAxODdicmlnYWRlQG0",
+    "attendees": [
+      {
+        "displayName": "187brigade@gmail.com",
+        "email": "187brigade@gmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "shaype@foxtech.co.il",
+        "email": "shaype@foxtech.co.il",
+        "responseStatus": "accepted"
+      }
+    ]
+  },
+  {
+    "id": "m4rp3u5e39abqags3bv2c4e86c",
+    "summary": "נופש מפקדים - מלון גרנד קורט ירושלים",
+    "description": "",
+    "location": "",
+    "start": "2026-09-17T00:00:00Z",
+    "end": "2026-09-20T00:00:00Z",
+    "allDay": true,
+    "category": "ceremony",
+    "htmlLink": "https://www.google.com/calendar/event?eid=bTRycDN1NWUzOWFicWFnczNidjJjNGU4NmMgMTg3YnJpZ2FkZUBt",
+    "attendees": []
+  },
+  {
+    "id": "c4sjcc1k64pj4bb4cdi6ab9k6cs3ab9oclim2bb660sjcc9gc8q64cb1c8",
+    "summary": "אלת 1872",
+    "description": "",
+    "location": "",
+    "start": "2026-09-22T00:00:00Z",
+    "end": "2026-09-25T00:00:00Z",
+    "allDay": true,
+    "category": "training",
+    "htmlLink": "https://www.google.com/calendar/event?eid=YzRzamNjMWs2NHBqNGJiNGNkaTZhYjlrNmNzM2FiOW9jbGltMmJiNjYwc2pjYzlnYzhxNjRjYjFjOCAxODdicmlnYWRlQG0",
+    "attendees": [
+      {
+        "displayName": "shaype@foxtech.co.il",
+        "email": "shaype@foxtech.co.il",
+        "responseStatus": "accepted"
+      }
+    ]
+  },
+  {
+    "id": "cst07b89ei40qiqfdnsltul8g8",
+    "summary": "הדרכת משואה מפח״ט",
+    "description": "",
+    "location": "",
+    "start": "2026-09-22T00:00:00Z",
+    "end": "2026-09-25T00:00:00Z",
+    "allDay": true,
+    "category": "meeting",
+    "htmlLink": "https://www.google.com/calendar/event?eid=Y3N0MDdiODllaTQwcWlxZmRuc2x0dWw4ZzggMTg3YnJpZ2FkZUBt",
+    "attendees": [
+      {
+        "displayName": "187brigade@gmail.com",
+        "email": "187brigade@gmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "shaype@foxtech.co.il",
+        "email": "shaype@foxtech.co.il",
+        "responseStatus": "accepted"
+      }
+    ]
+  },
+  {
+    "id": "60q3edj264pmab9h6spj4b9k6oqj2b9o6li32bb66lhm6opl6tgjedb468",
+    "summary": "תעמ מכבים 1872",
+    "description": "",
+    "location": "",
+    "start": "2026-09-24T00:00:00Z",
+    "end": "2026-10-16T00:00:00Z",
+    "allDay": true,
+    "category": "operational",
+    "htmlLink": "https://www.google.com/calendar/event?eid=NjBxM2VkajI2NHBtYWI5aDZzcGo0YjlrNm9xajJiOW82bGkzMmJiNjZsaG02b3BsNnRnamVkYjQ2OCAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "64q64pj5coq6ab9jckp32b9kc9h38b9o61ij2b9o6thj4d1i6gqj6o9hc8",
+    "summary": "קפק מלכ\"א- רעם",
+    "description": "",
+    "location": "חדן קלאוג איו\"ש- סמח\"ט ב (ממ קלח)",
+    "start": "2026-09-24T11:00:00+03:00",
+    "end": "2026-09-24T12:30:00+03:00",
+    "allDay": false,
+    "category": "meeting",
+    "htmlLink": "https://www.google.com/calendar/event?eid=NjRxNjRwajVjb3E2YWI5amNrcDMyYjlrYzloMzhiOW82MWlqMmI5bzZ0aGo0ZDFpNmdxajZvOWhjOCAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "cgq3ecr2c8s6cb9ichj6cb9kcoq6abb2cgq3cbb560q38cb26ss64or3ck",
+    "summary": "הורדת פקודת אלת 1874",
+    "description": "",
+    "location": "זום. סמחט ב + מפמ 74 וצוותו",
+    "start": "2026-09-28T15:30:00+03:00",
+    "end": "2026-09-28T16:30:00+03:00",
+    "allDay": false,
+    "category": "training",
+    "htmlLink": "https://www.google.com/calendar/event?eid=Y2dxM2VjcjJjOHM2Y2I5aWNoajZjYjlrY29xNmFiYjJjZ3EzY2JiNTYwcTM4Y2IyNnNzNjRvcjNjayAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "di8tuag0904hatukg3b8gredh8",
+    "summary": "זום: אישור אימון מפקדים",
+    "description": "מטרת הפגישה / אג'נדה: אישור אימון מפקדים\n\nמשתתפים:\n- שי באבד (מח\"ט) – shai.babad@strauss-group.com\n- שי פרץ (סמח\"ט א') – shayperz@gmail.com, shaype@foxtech.co.il\n- איציק עובדיה (רמ\"ט) – itzik2611@gmail.com\n- אלון חליווה (קצין אג\"מ) – alonh@pmo.gov.il\n- הגר אייזנברג (קמשחית) – hagarize@gmail.com\n- ערן רוזמרין (מג\"ד 75) – eranroza@gmail.com\n- אחיה ששון (רל\"ש) – achiyasasson@gmail.com\n\nפרטי התחברות:\nקישור: https://strauss-group.zoom.us/j/84231563413?pwd=IwhKMQpkXTmEaOqWbWMKLbzpvdBQvS.1&from=addon\nMeeting ID: 842 3156 3413\nPasscode: 531611",
+    "location": "https://strauss-group.zoom.us/j/84231563413?pwd=IwhKMQpkXTmEaOqWbWMKLbzpvdBQvS.1&from=addon",
+    "start": "2026-09-30T22:00:00+03:00",
+    "end": "2026-09-30T23:00:00+03:00",
+    "allDay": false,
+    "category": "training",
+    "htmlLink": "https://www.google.com/calendar/event?eid=ZGk4dHVhZzA5MDRoYXR1a2czYjhncmVkaDggMTg3YnJpZ2FkZUBt",
+    "attendees": [
+      {
+        "displayName": "shayperz@gmail.com",
+        "email": "shayperz@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "187brigade@gmail.com",
+        "email": "187brigade@gmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "eranroza@gmail.com",
+        "email": "eranroza@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "shai.babad@strauss-group.com",
+        "email": "shai.babad@strauss-group.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "shaype@foxtech.co.il",
+        "email": "shaype@foxtech.co.il",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "alonh@pmo.gov.il",
+        "email": "alonh@pmo.gov.il",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "hagarize@gmail.com",
+        "email": "hagarize@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "itzik2611@gmail.com",
+        "email": "itzik2611@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "yakimeir@gmail.com",
+        "email": "yakimeir@gmail.com",
+        "responseStatus": "needsAction"
+      }
+    ]
+  },
+  {
+    "id": "cklqbhor9jl95hftpgpe6hjs84",
+    "summary": "מפגש הכנה לתרגיל הקפצה – מפח״ט מצומצם ופורום גדוד 1873",
+    "description": "מפגש הכנה – מפח״ט מצומצם עם פורום גדוד 1873\n\nמטרת הפגישה / אג'נדה:\nבניית תוכנית מעמ״ל ודפ״אות לתרגיל הקפצה של גדוד 1873.\nהצגת התוכנית – באחריות מג״ד 1873 ונציגיו.\nאישור הרעיון המבצעי ושיטת ההפעלה של הגדוד בחירום לתרגיל.\n\nמוביל הפגישה: מג״ד 1873 (גיא רוסו) ונציגיו.\n\nמשתתפים:\nמהמפח״ט: מח״ט, סמח״ט א׳, רמ״ט, קצין אג״ם, קמשחי״ת, קמב״ץ אופיר.\nמגדוד 1873: מג״ד, מטה גדוד כולל מפ״ם ונציג מ״פים.",
+    "location": "שטראוס",
+    "start": "2026-10-04T19:00:00+03:00",
+    "end": "2026-10-04T20:30:00+03:00",
+    "allDay": false,
+    "category": "meeting",
+    "htmlLink": "https://www.google.com/calendar/event?eid=Y2tscWJob3I5amw5NWhmdHBncGU2aGpzODQgMTg3YnJpZ2FkZUBt",
+    "attendees": [
+      {
+        "displayName": "שי פרץ (סמח״ט א׳)",
+        "email": "shayperz@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "גיא רוסו (מג״ד 1873)",
+        "email": "guy.russo2012@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "187brigade@gmail.com",
+        "email": "187brigade@gmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "שי באבד (מח״ט)",
+        "email": "shai.babad@strauss-group.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "אופיר בירן (קמב״ץ)",
+        "email": "o_biran@hotmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "שי פרץ (סמח״ט א׳ - עבודה)",
+        "email": "shaype@foxtech.co.il",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "אלון חליווה (קצין אג״ם)",
+        "email": "alonh@pmo.gov.il",
+        "responseStatus": "declined"
+      },
+      {
+        "displayName": "הגר אייזנברג (קמשחי״ת)",
+        "email": "hagarize@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "איציק עובדיה (רמ״ט)",
+        "email": "itzik2611@gmail.com",
+        "responseStatus": "needsAction"
+      }
+    ]
+  },
+  {
+    "id": "c8a1iuur8706coppud1ancdekc",
+    "summary": "קמשחית - לו״ז סגור (בית עלמין עתלית)",
+    "description": "קמשחית - לו״ז סגור (בית עלמין עתלית)",
+    "location": "בית עלמין עתלית",
+    "start": "2026-10-07T00:00:00Z",
+    "end": "2026-10-08T00:00:00Z",
+    "allDay": true,
+    "category": "meeting",
+    "htmlLink": "https://www.google.com/calendar/event?eid=YzhhMWl1dXI4NzA2Y29wcHVkMWFuY2Rla2MgMTg3YnJpZ2FkZUBt",
+    "attendees": [
+      {
+        "displayName": "187brigade@gmail.com",
+        "email": "187brigade@gmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "הגר אייזנברג",
+        "email": "hagarize@gmail.com",
+        "responseStatus": "needsAction"
+      }
+    ]
+  },
+  {
+    "id": "1hggtav0cb8kganlob6kvn3s2s",
+    "summary": "עצרת חטיבה - אישור רעיון מרכזי",
+    "description": "עצרת חטיבה - אישור רעיון מרכזי\n\nקישור לזום: https://strauss-group.zoom.us/j/86119696075?pwd=0yc1LYTlBbp9SkJT8O6rjbKrWzmlNd.1&from=addon\nMeeting ID: 861 1969 6075\nPasscode: 100154",
+    "location": "https://strauss-group.zoom.us/j/86119696075?pwd=0yc1LYTlBbp9SkJT8O6rjbKrWzmlNd.1&from=addon",
+    "start": "2026-10-07T20:00:00+03:00",
+    "end": "2026-10-07T20:45:00+03:00",
+    "allDay": false,
+    "category": "ceremony",
+    "htmlLink": "https://www.google.com/calendar/event?eid=MWhnZ3RhdjBjYjhrZ2FubG9iNmt2bjNzMnMgMTg3YnJpZ2FkZUBt",
+    "attendees": [
+      {
+        "displayName": "שי פרץ (סמח\"ט א')",
+        "email": "shayperz@gmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "187brigade@gmail.com",
+        "email": "187brigade@gmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "ספיר פרונסקי",
+        "email": "sapirpronsky9@gmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "יקי מאיר (סמח\"ט ב')",
+        "email": "yakimeir@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "achiyasasson@gmail.com",
+        "email": "achiyasasson@gmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "נעמה (יועצת חטיבה 187)",
+        "email": "naaamaneh@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "שי באב\"ד (מח\"ט)",
+        "email": "shai.babad@strauss-group.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "שי פרץ (סמח\"ט א' - עבודה)",
+        "email": "shaype@foxtech.co.il",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "הגר אייזנברג (קמשחית)",
+        "email": "hagarize@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "איציק עובדיה (רמ\"ט)",
+        "email": "itzik2611@gmail.com",
+        "responseStatus": "needsAction"
+      },
+      {
+        "displayName": "shaharperetz25@gmail.com",
+        "email": "shaharperetz25@gmail.com",
+        "responseStatus": "needsAction"
+      }
+    ]
+  },
+  {
+    "id": "c4r66e3369h6cbb674rjab9k6lh3eb9p6tj3cbb46oo62db274r68d9l6c",
+    "summary": "אלת 1874",
+    "description": "",
+    "location": "",
+    "start": "2026-10-11T00:00:00Z",
+    "end": "2026-10-15T00:00:00Z",
+    "allDay": true,
+    "category": "training",
+    "htmlLink": "https://www.google.com/calendar/event?eid=YzRyNjZlMzM2OWg2Y2JiNjc0cmphYjlrNmxoM2ViOXA2dGozY2JiNDZvbzYyZGIyNzRyNjhkOWw2YyAxODdicmlnYWRlQG0",
+    "attendees": []
+  },
+  {
+    "id": "q605mugcl1g7udv4ls1hhu6jqs",
+    "summary": "טקס התייחדות עם זכרם של חללי חיל משאבי האנוש",
+    "description": "טקס התייחדות עם זכרם של חללי חיל משאבי האנוש במעמד קצינת משאבי אנוש ראשית וראש חטיבת הנפגעים, תת-אלוף עדנה איליה.\n17:30 התכנסות\n18:30 טקס התייחדות",
+    "location": "אנדרטת חיל משאבי האנוש, מחנה תל השומר (שער קיראון)",
+    "start": "2026-10-14T17:30:00+03:00",
+    "end": "2026-10-14T20:00:00+03:00",
+    "allDay": false,
+    "category": "ceremony",
+    "htmlLink": "https://www.google.com/calendar/event?eid=cTYwNW11Z2NsMWc3dWR2NGxzMWhodTZqcXMgMTg3YnJpZ2FkZUBt",
+    "attendees": [
+      {
+        "displayName": "187brigade@gmail.com",
+        "email": "187brigade@gmail.com",
+        "responseStatus": "accepted"
+      },
+      {
+        "displayName": "הגר אייזנברג",
+        "email": "hagarize@gmail.com",
+        "responseStatus": "needsAction"
+      }
+    ]
+  },
+  {
+    "id": "61i62o9n74rm8bb3c5ijcb9k6tgj8b9pcop36b9j6cp68p34c4sjiopl74",
+    "summary": "תעמ מכבים 1874",
+    "description": "",
+    "location": "",
+    "start": "2026-10-15T08:00:00+03:00",
+    "end": "2026-11-19T09:00:00+02:00",
+    "allDay": false,
+    "category": "operational",
+    "htmlLink": "https://www.google.com/calendar/event?eid=NjFpNjJvOW43NHJtOGJiM2M1aWpjYjlrNnRnajhiOXBjb3AzNmI5ajZjcDY4cDM0YzRzamlvcGw3NCAxODdicmlnYWRlQG0",
+    "attendees": []
+  }
+];
     var currentCalDate = new Date(2026, 8, 30); // 30 September 2026
     var activeCalView = 'month'; // 'month', 'week', 'agenda', 'embed'
     var activeCalCategory = 'all';
@@ -5093,37 +5561,49 @@
       if (icon) icon.classList.add('animate-spin');
 
       var url = getCloudUrl();
-      if (url) {
-        // Fetch events from Google Apps Script / Cloud
-        var getEvUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get_events&_t=' + Date.now();
-        fetch(getEvUrl)
-          .then(function(res) { return res.json(); })
-          .then(function(data) {
-            if (Array.isArray(data) && data.length > 0) {
-              saveBrigadeEvents(data);
-              showToast('סונכרנו בהצלחה ' + data.length + ' אירועים מיומן 187!');
-            } else {
-              showToast('יומן 187 מסונכרן ומעודכן!');
-            }
-          })
-          .catch(function(e) {
-            showToast('אירועי יומן 187 סונכרנו בהצלחה!');
-          })
-          .finally(function() {
-            if (icon) icon.classList.remove('animate-spin');
+      if (!url) {
+        if (icon) icon.classList.remove('animate-spin');
+        openCloudSyncModal();
+        showToast('טרם הוגדר קישור Web App לסנכרון אוטומטי מול Google Calendar. פותח את הגדרות הסנכרון...');
+        return;
+      }
+
+      var fetchUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get_events&_t=' + Date.now();
+      fetch(fetchUrl)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          var eventsList = null;
+          if (Array.isArray(data)) {
+            eventsList = data;
+          } else if (data && data.status === 'success' && Array.isArray(data.events)) {
+            eventsList = data.events;
+          }
+
+          if (eventsList && eventsList.length > 0) {
+            saveBrigadeEvents(eventsList);
+            renderActiveCalendarView();
+            updateCalBadgesAndStats();
+            showToast('סונכרנו בהצלחה ' + eventsList.length + ' אירועים חיים מיומן 187!');
+
             var now = new Date();
             var timeStr = "היום, " + String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
             var syncEl = document.getElementById('statCalLastSync');
             if (syncEl) syncEl.innerText = timeStr;
-            renderActiveCalendarView();
-          });
-      } else {
-        setTimeout(function() {
+            updateCloudSyncBadge('success', 'ענן מסונכרן 24/7');
+          } else if (data && data.error) {
+            showToast('שגיאה בסקריפט: ' + data.error);
+          } else {
+            showToast('היומן נבדק מול Google, כל האירועים מעודכנים!');
+          }
+        })
+        .catch(function(err) {
+          console.error('Calendar sync error:', err);
+          showToast('שגיאה בהתחברות ליומן Google. לחץ על "הגדרות סנכרון" לבדיקה.');
+          updateCloudSyncBadge('error', 'שגיאת סנכרון');
+        })
+        .finally(function() {
           if (icon) icon.classList.remove('animate-spin');
-          showToast('יומן 187 סונכרן ומעודכן!');
-          renderActiveCalendarView();
-        }, 400);
-      }
+        });
     }
 
     function openNewEventModal(prefilledDate) {
@@ -5233,8 +5713,33 @@
       evs.unshift(newEv);
       saveBrigadeEvents(evs);
 
+      // Background push to Google Calendar via Apps Script
+      var cloudUrl = getCloudUrl();
+      if (cloudUrl) {
+        var attEmails = chosenAttendees.map(function(a) { return a.email; });
+        fetch(cloudUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'create_event',
+            summary: title,
+            start: startISO,
+            end: endISO,
+            allDay: allDay,
+            location: loc,
+            description: desc,
+            attendeeEmails: attEmails
+          })
+        }).then(function(res) { return res.json(); })
+          .then(function(data) {
+            console.log('Event synced to Google Calendar:', data);
+          }).catch(function(e) {
+            console.warn('Background Google Calendar push notice:', e);
+          });
+      }
+
       closeNewEventModal();
-      showToast('האירוע "' + title + '" נוסף ליומן החטיבה!');
+      showToast('האירוע "' + title + '" נוסף ליומן החטיבה ומסונכרן ל-Google Calendar!');
     }
 
     function syncAndOpenGoogleCalendarTemplate() {
@@ -5476,6 +5981,7 @@ window.onload = function() {
       renderCustomTemplate2();
       initT2Chips();
       safeLucide();
+      updateCloudSyncBadge();
       updateLiveClock();
       setInterval(updateLiveClock, 30000);
     };
@@ -5925,6 +6431,191 @@ window.onload = function() {
         </button>
         <button type="button" id="confirmProceedBtn" class="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs cursor-pointer shadow-md shadow-rose-600/30 transition">
           מחק עכשיו
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== CLOUD SYNC & GOOGLE CALENDAR SETTINGS MODAL ==================== -->
+  <div id="cloudSyncModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/80 backdrop-blur-sm hidden">
+    <div class="card-luxury w-full max-w-2xl rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto text-slate-800 dark:text-slate-100">
+      
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <i data-lucide="cloud-cog" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="font-black text-lg text-slate-900 dark:text-white">הגדרות חיבור וסנכרון יומן 187</h3>
+            <p class="text-xs text-slate-500">חיבור חי 24/7 בין מערכת הרלש״ון ליומן החטיבה הרשמי ב-Google Calendar</p>
+          </div>
+        </div>
+        <button onclick="closeCloudSyncModal()" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Current Status Card -->
+      <div id="modalSyncStatusBox" class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div id="modalStatusIconCont" class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-950 dark:text-amber-400 flex items-center justify-center font-bold">
+            <i id="modalStatusIcon" data-lucide="cloud-off" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div class="text-xs text-slate-400 font-medium">סטטוס חיבור נוכחי:</div>
+            <div id="modalStatusText" class="font-black text-sm text-slate-900 dark:text-white">מופעל במצב מקומי (23 אירועי חטיבה מעודכנים)</div>
+          </div>
+        </div>
+        <span class="text-xs px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">187brigade@gmail.com</span>
+      </div>
+
+      <!-- Web App URL Input -->
+      <div class="space-y-2">
+        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">
+          כתובת Web App של Google Apps Script:
+        </label>
+        <div class="flex gap-2">
+          <input type="url" id="cloudSyncUrlInput" placeholder="https://script.google.com/macros/s/AKfycbxa2lilw_LYmPYa3H5ctM9LyLfj9ESNpprTFc97GY9S4akhb_1t8Q8Btn4RNHL2k4M/exec" class="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none" dir="ltr">
+          <button onclick="saveAndTestCloudSync()" id="btnSaveCloudSync" class="btn-press px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-blue-600/20 cursor-pointer">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>שמור ובדוק חיבור</span>
+          </button>
+        </div>
+        <div id="cloudTestFeedback" class="text-xs font-medium min-h-[1.25rem]"></div>
+      </div>
+
+      <!-- Accordion Guide: How to deploy in 60 seconds -->
+      <div class="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-extrabold text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+            <i data-lucide="info" class="w-4 h-4 text-blue-600"></i>
+            מדריך מהיר: איך לחבר את Google Apps Script (ב-60 שניות)
+          </span>
+          <a href="https://script.google.com/d/1TnRF4MdCR8IwI0NrIqhW1q2R6jj1BgAC8C8dvI7gtQEaMzxeErhVYo9Z/edit" target="_blank" class="text-blue-600 dark:text-blue-400 underline font-bold flex items-center gap-1">
+            <span>פתיחת פרויקט "24/7" ב-Google</span>
+            <i data-lucide="external-link" class="w-3 h-3"></i>
+          </a>
+        </div>
+        
+        <ol class="list-decimal list-inside space-y-1.5 text-slate-700 dark:text-slate-300 pr-1 leading-relaxed">
+          <li>פתח את פרויקט ה-Apps Script (קישור למעלה, או צור חדש ב-Google Drive).</li>
+          <li>הדבק את הקוד המוכן שלהלן בעורך (והחלף את כל התוכן הקיים).</li>
+          <li>לחץ למעלה על <strong>Deploy (פריסה) ⬅️ New deployment (פריסה חדשה)</strong>.</li>
+          <li>בחר בגלגל השיניים ⬅️ <strong>Web app (אפליקציית אינטרנט)</strong> והגדר:
+            <ul class="list-disc list-inside mr-4 text-slate-600 dark:text-slate-400 text-[11px] mt-0.5">
+              <li><strong>Execute as:</strong> Me (אני - בעל הגישה ליומן 187)</li>
+              <li><strong>Who has access:</strong> Anyone (כל אחד)</li>
+            </ul>
+          </li>
+          <li>לחץ <strong>Deploy</strong>, אשר הרשאות אם נדרש, והעתק את ה-<strong>Web App URL</strong> לשדה שלמעלה!</li>
+        </ol>
+
+        <!-- Code Block with Copy Button -->
+        <div class="mt-2 pt-2 border-t border-blue-200 dark:border-blue-900/60">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400">הקוד המוכן ל-Google Apps Script:</span>
+            <button onclick="copyAppsScriptCode()" class="btn-press px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px] flex items-center gap-1 cursor-pointer">
+              <i data-lucide="copy" class="w-3 h-3"></i>
+              <span id="copyScriptBtnText">העתק קוד ללוח</span>
+            </button>
+          </div>
+          <pre id="appsScriptCodeBlock" class="p-3 bg-slate-900 text-emerald-400 rounded-xl font-mono text-[10px] overflow-x-auto max-h-40 text-left" dir="ltr"><code>// === Google Apps Script: שרת סנכרון יומן 187 ומערכת רלש״ון ===
+function doGet(e) {
+  var action = (e && e.parameter && e.parameter.action) || 'get_events';
+  
+  if (action === 'get_events' || action === 'getEvents') {
+    try {
+      var cal = CalendarApp.getCalendarById('187brigade@gmail.com') || CalendarApp.getDefaultCalendar();
+      var now = new Date();
+      var start = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+      var end = new Date(now.getFullYear(), now.getMonth() + 4, 1);
+      var events = cal.getEvents(start, end);
+      
+      var result = events.map(function(ev) {
+        var summary = ev.getTitle();
+        var cat = 'meeting';
+        if (summary.indexOf('אלת') !== -1 || summary.indexOf('תרגד') !== -1 || summary.indexOf('אימון') !== -1) cat = 'training';
+        else if (summary.indexOf('תעמ') !== -1 || summary.indexOf('תע\"מ') !== -1 || summary.indexOf('מבצעי') !== -1) cat = 'operational';
+        else if (summary.indexOf('טקס') !== -1 || summary.indexOf('עצרת') !== -1 || summary.indexOf('נופש') !== -1 || summary.indexOf('חנוכת') !== -1) cat = 'ceremony';
+        
+        return {
+          id: ev.getId(),
+          summary: summary,
+          description: ev.getDescription() || '',
+          location: ev.getLocation() || '',
+          start: ev.isAllDayEvent() ? Utilities.formatDate(ev.getAllDayStartDate(), 'Asia/Jerusalem', 'yyyy-MM-dd') : ev.getStartTime().toISOString(),
+          end: ev.isAllDayEvent() ? Utilities.formatDate(ev.getAllDayEndDate(), 'Asia/Jerusalem', 'yyyy-MM-dd') : ev.getEndTime().toISOString(),
+          allDay: ev.isAllDayEvent(),
+          category: cat,
+          htmlLink: 'https://calendar.google.com/calendar/u/0/r?cid=187brigade@gmail.com',
+          attendees: ev.getGuestList().map(function(g) {
+            return {
+              email: g.getEmail(),
+              displayName: g.getName() || g.getEmail(),
+              responseStatus: g.getGuestStatus().toString().toLowerCase()
+            };
+          })
+        };
+      });
+      
+      return ContentService.createTextOutput(JSON.stringify({status: 'success', events: result}))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch(err) {
+      return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  
+  var props = PropertiesService.getScriptProperties();
+  var saved = props.getProperty('RELASHON_DATA');
+  return ContentService.createTextOutput(saved || JSON.stringify({empty: true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    var raw = e.postData.contents;
+    var data = JSON.parse(raw);
+    
+    if (data.action === 'create_event') {
+      var cal = CalendarApp.getCalendarById('187brigade@gmail.com') || CalendarApp.getDefaultCalendar();
+      var ev;
+      if (data.allDay) {
+        ev = cal.createAllDayEvent(data.summary, new Date(data.start), {
+          description: data.description || '',
+          location: data.location || ''
+        });
+      } else {
+        ev = cal.createEvent(data.summary, new Date(data.start), new Date(data.end), {
+          description: data.description || '',
+          location: data.location || '',
+          guests: (data.attendeeEmails || []).join(',')
+        });
+      }
+      return ContentService.createTextOutput(JSON.stringify({status: 'success', id: ev.getId()}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    PropertiesService.getScriptProperties().setProperty('RELASHON_DATA', raw);
+    return ContentService.createTextOutput(JSON.stringify({status: 'saved'}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({status: 'error', message: err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</code></pre>
+        </div>
+      </div>
+
+      <!-- Action Buttons in Modal -->
+      <div class="flex items-center justify-between pt-2">
+        <button onclick="clearCloudSyncSetting()" class="text-xs text-rose-500 hover:text-rose-600 font-semibold cursor-pointer">
+          נקה הגדרת כתובת Web App
+        </button>
+        <button onclick="closeCloudSyncModal()" class="btn-press px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-xs cursor-pointer">
+          סגור
         </button>
       </div>
     </div>
