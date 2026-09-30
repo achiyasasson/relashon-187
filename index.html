@@ -1660,8 +1660,10 @@
     }
     function saveContacts(data) {
       contacts = data || [];
+      var nowIso = new Date().toISOString();
       try {
         localStorage.setItem('relashon_contacts', JSON.stringify(contacts));
+        localStorage.setItem('relashon_last_updated', nowIso);
       } catch (e) {}
       if (typeof pushAllDataToFirestore === 'function') {
         pushAllDataToFirestore(true);
@@ -1717,6 +1719,33 @@
     }
 
     // Tab Navigation - Ultra Sleek Pill Switcher
+    
+    // ==================== IN-APP CONFIRMATION MODAL LOGIC ====================
+    function openConfirmModal(title, msg, btnText, callback) {
+      var tEl = document.getElementById('confirmActionTitle');
+      var mEl = document.getElementById('confirmActionMessage');
+      var btn = document.getElementById('confirmProceedBtn');
+      var modal = document.getElementById('confirmActionModal');
+
+      if (tEl) tEl.innerText = title || 'אישור פעולה';
+      if (mEl) mEl.innerText = msg || 'האם אתה בטוח?';
+      if (btn) {
+        btn.innerText = btnText || 'מחק';
+        btn.onclick = function() {
+          closeConfirmModal();
+          if (typeof callback === 'function') callback();
+        };
+      }
+      if (modal) modal.classList.remove('hidden');
+      safeLucide();
+    }
+
+    function closeConfirmModal() {
+      var modal = document.getElementById('confirmActionModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+
     function switchTab(tabId) {
       var tabs = ['overview', 'internal', 'phonebook', 'tasks', 'templates'];
       for (var i = 0; i < tabs.length; i++) {
@@ -1744,8 +1773,6 @@
           }
         }
       }
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1875,8 +1902,6 @@
       document.documentElement.classList.toggle('dark');
       var isDark = document.documentElement.classList.contains('dark');
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -1953,8 +1978,6 @@
           '</div>';
         }).join('');
       }
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -2029,8 +2052,6 @@
 
       regenerateExtOutputs();
       showToast('הפנייה עובדה בהצלחה!');
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -2498,8 +2519,6 @@
 
       document.getElementById('intOutputsContainer').classList.remove('hidden');
       showToast('התוצרים הופקו בהצלחה!');
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -2647,8 +2666,6 @@
       document.getElementById('modalAssistant').value = c.assistant || "";
       document.getElementById('modalCategory').value = c.category || "hq";
       document.getElementById('contactModal').classList.remove('hidden');
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -2735,19 +2752,30 @@
     }
 
     function deleteContact(index) {
+      index = parseInt(index);
+      if (isNaN(index) || index < 0 || index >= contacts.length) return;
       var c = contacts[index];
-      if (confirm('האם למחוק את ' + c.role + ' (' + c.firstName + ' ' + c.lastName + ') מהאלפון?')) {
-        contacts.splice(index, 1);
-        localStorage.setItem('relashon_contacts', JSON.stringify(contacts));
-        populateExtExecutiveSelect();
-        renderPhonebookTable();
-        renderInternalAttendeesCheckboxes();
-      populateIntLeadSelect();
-      setQuickDate("today");
-      setQuickTimeSlot("10:00", "11:30");
-        updateDashboardStats();
-        showToast('איש הקשר נמחק');
-      }
+      if (!c) return;
+      var name = (c.role || '') + (c.firstName ? ' – ' + c.firstName + ' ' + (c.lastName || '') : '');
+
+      openConfirmModal(
+        'מחיקת איש קשר',
+        'האם למחוק את ' + name + ' מאלפון החטיבה?',
+        'מחק איש קשר',
+        function() {
+          contacts.splice(index, 1);
+          var nowIso = new Date().toISOString();
+          localStorage.setItem('relashon_last_updated', nowIso);
+
+          saveContacts(contacts);
+
+          renderPhonebookTable();
+          renderInternalAttendeesCheckboxes();
+          populateIntLeadSelect();
+          updateDashboardStats();
+          showToast('איש הקשר ' + name + ' נמחק בהצלחה');
+        }
+      );
     }
 
     function exportPhonebookCSV() {
@@ -2835,8 +2863,6 @@
           '</div>' +
         '</div>';
       }).join('');
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -2886,13 +2912,27 @@
     }
 
     function deleteTask(index) {
-      if (confirm('האם למחוק משימה זו?')) {
-        tasks.splice(index, 1);
-        saveTasks(tasks);
-        renderTasks();
-        updateDashboardStats();
-        showToast('המשימה נמחקה');
-      }
+      index = parseInt(index);
+      if (isNaN(index) || index < 0 || index >= tasks.length) return;
+      var t = tasks[index];
+      if (!t) return;
+      var title = t.title || 'משימה';
+
+      openConfirmModal(
+        'מחיקת משימה',
+        'האם למחוק את המשימה "' + title + '"?',
+        'מחק משימה',
+        function() {
+          tasks.splice(index, 1);
+          var nowIso = new Date().toISOString();
+          localStorage.setItem('relashon_last_updated', nowIso);
+
+          saveTasks(tasks);
+          renderTasks();
+          updateDashboardStats();
+          showToast('המשימה נמחקה בהצלחה');
+        }
+      );
     }
 
     // ==================== TEMPLATES (תבניות מהירות) ====================
@@ -3208,9 +3248,7 @@
       var m = document.getElementById('emblemModal');
       if (m) {
         m.classList.remove('hidden');
-        checkInitialAuth();
-      initFirebaseDatabase();
-      safeLucide();
+        safeLucide();
       }
     }
     function closeEmblemModal() {
@@ -3225,8 +3263,6 @@
     function openBackupRestoreModal() {
       var modal = document.getElementById('backupRestoreModal');
       if (modal) modal.classList.remove('hidden');
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -3408,8 +3444,6 @@
         input.type = 'password';
         if (icon) icon.setAttribute('data-lucide', 'eye');
       }
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -3437,8 +3471,6 @@
       document.getElementById('pwNewInput').value = '';
       document.getElementById('pwConfirmInput').value = '';
       if (modal) modal.classList.remove('hidden');
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -3534,6 +3566,17 @@
           // Sync password
           if (data.passwordHash) {
             localStorage.setItem('relashon_pw_hash', data.passwordHash);
+          }
+
+          // Conflict resolution: protect local newer changes from being reverted
+          var localTimeStr = localStorage.getItem('relashon_last_updated');
+          if (data.lastUpdated && localTimeStr) {
+            var cloudTime = new Date(data.lastUpdated).getTime();
+            var localTime = new Date(localTimeStr).getTime();
+            if (localTime > cloudTime + 500) {
+              pushAllDataToFirestore(true);
+              return;
+            }
           }
 
           // Sync contacts
@@ -3724,8 +3767,6 @@
         input.type = 'password';
         if (icon) icon.setAttribute('data-lucide', 'eye');
       }
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -3753,8 +3794,6 @@
       document.getElementById('pwNewInput').value = '';
       document.getElementById('pwConfirmInput').value = '';
       if (modal) modal.classList.remove('hidden');
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -4070,8 +4109,6 @@
         input.type = 'password';
         if (icon) icon.setAttribute('data-lucide', 'eye');
       }
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -4099,8 +4136,6 @@
       document.getElementById('pwNewInput').value = '';
       document.getElementById('pwConfirmInput').value = '';
       if (modal) modal.classList.remove('hidden');
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
     }
 
@@ -4326,8 +4361,6 @@ window.onload = function() {
       renderCustomTemplate1();
       renderCustomTemplate2();
       initT2Chips();
-      checkInitialAuth();
-      initFirebaseDatabase();
       safeLucide();
       updateLiveClock();
       setInterval(updateLiveClock, 30000);
@@ -4546,6 +4579,28 @@ window.onload = function() {
       <span class="text-[10px] leading-none">תבניות</span>
     </button>
   </nav>
+
+
+  <!-- Modal: Confirmation Dialog (Custom & Bulletproof for Mobile & Desktop) -->
+  <div id="confirmActionModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeConfirmModal()">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-800 shadow-2xl text-center space-y-4" onclick="event.stopPropagation()">
+      <div class="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 mx-auto flex items-center justify-center shadow-inner">
+        <i data-lucide="trash-2" class="w-6 h-6"></i>
+      </div>
+      <div>
+        <h3 id="confirmActionTitle" class="font-black text-lg text-slate-900 dark:text-white">אישור מחיקה</h3>
+        <p id="confirmActionMessage" class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">האם אתה בטוח שברצונך למחוק פריט זה?</p>
+      </div>
+      <div class="flex items-center gap-2 pt-2">
+        <button type="button" onclick="closeConfirmModal()" class="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs cursor-pointer transition">
+          ביטול
+        </button>
+        <button type="button" id="confirmProceedBtn" class="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs cursor-pointer shadow-md shadow-rose-600/30 transition">
+          מחק עכשיו
+        </button>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
