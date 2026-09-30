@@ -1653,6 +1653,43 @@
     ];
 
     var contacts = [];
+
+    // ==================== GLOBAL HELPER BRIDGES ====================
+    function getContacts() {
+      return contacts || [];
+    }
+    function saveContacts(data) {
+      contacts = data || [];
+      try {
+        localStorage.setItem('relashon_contacts', JSON.stringify(contacts));
+      } catch (e) {}
+      if (typeof pushAllDataToFirestore === 'function') {
+        pushAllDataToFirestore(true);
+      }
+    }
+    function getTasks() {
+      return tasks || [];
+    }
+    function saveTasks(data) {
+      tasks = data || [];
+      try {
+        saveTasks(tasks);
+      } catch (e) {}
+      if (typeof pushAllDataToFirestore === 'function') {
+        pushAllDataToFirestore(true);
+      }
+    }
+    function renderContacts() {
+      renderPhonebookTable();
+    }
+    function renderOverviewStats() {
+      updateDashboardStats();
+    }
+    function openEditContactModal(idx) {
+      editContact(idx);
+    }
+
+
     var tasks = [];
     try {
       contacts = JSON.parse(localStorage.getItem('relashon_contacts')) || DEFAULT_CONTACTS;
@@ -1848,7 +1885,7 @@
         contacts = DEFAULT_CONTACTS.slice();
         tasks = DEFAULT_TASKS.slice();
         localStorage.setItem('relashon_contacts', JSON.stringify(contacts));
-        localStorage.setItem('relashon_tasks', JSON.stringify(tasks));
+        saveTasks(tasks);
         populateExtExecutiveSelect();
         renderPhonebookTable();
         renderInternalAttendeesCheckboxes();
@@ -2620,43 +2657,80 @@
     }
 
     function saveContactModal() {
-      var role = document.getElementById('modalRole').value.trim();
-      var firstName = document.getElementById('modalFirstName').value.trim();
-      var lastName = document.getElementById('modalLastName').value.trim();
+      var roleInput = document.getElementById('modalRole');
+      var fNameInput = document.getElementById('modalFirstName');
+      var lNameInput = document.getElementById('modalLastName');
 
-      if (!role || !firstName || !lastName) {
-        showToast('נא למלא תפקיד, שם פרטי ושם משפחה');
+      var role = roleInput ? roleInput.value.trim() : '';
+      var firstName = fNameInput ? fNameInput.value.trim() : '';
+      var lastName = lNameInput ? lNameInput.value.trim() : '';
+
+      // If user provided nothing at all
+      if (!role && !firstName && !lastName) {
+        alert('נא להזין לפחות תפקיד או שם לאיש הקשר');
+        if (roleInput) roleInput.focus();
         return;
       }
+
+      // If firstName has a space and lastName is empty (e.g. "דני כהן")
+      if (firstName && !lastName && firstName.indexOf(' ') !== -1) {
+        var parts = firstName.split(' ');
+        firstName = parts[0];
+        lastName = parts.slice(1).join(' ');
+      }
+
+      // Sensible defaults so nothing is ever blocked
+      if (!role) role = 'קצין / בעל תפקיד';
+      if (!firstName && lastName) { firstName = lastName; lastName = ''; }
+      if (!firstName && !lastName) firstName = role;
 
       var contactData = {
         role: role,
         firstName: firstName,
         lastName: lastName,
-        phone: document.getElementById('modalPhone').value.trim(),
-        email: document.getElementById('modalEmail').value.trim(),
-        workEmail: document.getElementById('modalWorkEmail').value.trim(),
-        assistant: document.getElementById('modalAssistant').value.trim(),
-        category: document.getElementById('modalCategory').value
+        phone: document.getElementById('modalPhone') ? document.getElementById('modalPhone').value.trim() : '',
+        email: document.getElementById('modalEmail') ? document.getElementById('modalEmail').value.trim() : '',
+        workEmail: document.getElementById('modalWorkEmail') ? document.getElementById('modalWorkEmail').value.trim() : '',
+        assistant: document.getElementById('modalAssistant') ? document.getElementById('modalAssistant').value.trim() : '',
+        category: document.getElementById('modalCategory') ? document.getElementById('modalCategory').value : 'hq'
       };
 
       var index = parseInt(document.getElementById('modalContactIndex').value);
-      if (index >= 0) {
+      if (index >= 0 && index < contacts.length) {
         contacts[index] = contactData;
-        showToast('איש הקשר עודכן בהצלחה!');
+        showToast('איש הקשר ' + firstName + ' ' + lastName + ' עודכן בהצלחה!');
       } else {
-        contacts.push(contactData);
-        showToast('איש קשר חדש נוסף בהצלחה!');
+        // Add new contact to the TOP of the array so it is immediately visible!
+        contacts.unshift(contactData);
+        showToast('איש הקשר ' + firstName + ' ' + lastName + ' נוסף בהצלחה לאלפון!');
       }
 
-      localStorage.setItem('relashon_contacts', JSON.stringify(contacts));
+      // Reset category filter to "all" and clear search so the new contact is guaranteed to show
+      currentCategoryFilter = 'all';
+      var searchInput = document.getElementById('phonebookSearchInput');
+      if (searchInput) searchInput.value = '';
+      
+      // Update filter UI pills
+      var filterBtns = document.querySelectorAll('[onclick^="filterCategory"]');
+      filterBtns.forEach(function(b) {
+        if (b.innerText.indexOf('הכל') !== -1) {
+          b.className = "px-3 py-1.5 rounded-xl bg-brand-600 text-white font-bold whitespace-nowrap cursor-pointer";
+        } else {
+          b.className = "px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium whitespace-nowrap cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700";
+        }
+      });
+
+      // Save to localStorage & Cloud
+      saveContacts(contacts);
+      if (typeof pushAllDataToFirestore === 'function') {
+        pushAllDataToFirestore(true);
+      }
+
       closeContactModal();
       populateExtExecutiveSelect();
       renderPhonebookTable();
       renderInternalAttendeesCheckboxes();
       populateIntLeadSelect();
-      setQuickDate("today");
-      setQuickTimeSlot("10:00", "11:30");
       updateDashboardStats();
     }
 
@@ -2796,7 +2870,7 @@
         completed: false
       });
 
-      localStorage.setItem('relashon_tasks', JSON.stringify(tasks));
+      saveTasks(tasks);
       closeTaskModal();
       renderTasks();
       updateDashboardStats();
@@ -2805,7 +2879,7 @@
 
     function toggleTaskComplete(index) {
       tasks[index].completed = !tasks[index].completed;
-      localStorage.setItem('relashon_tasks', JSON.stringify(tasks));
+      saveTasks(tasks);
       renderTasks();
       updateDashboardStats();
       showToast(tasks[index].completed ? 'המשימה סומנה כהושלמה!' : 'המשימה הוחזרה לטיפול');
@@ -2814,7 +2888,7 @@
     function deleteTask(index) {
       if (confirm('האם למחוק משימה זו?')) {
         tasks.splice(index, 1);
-        localStorage.setItem('relashon_tasks', JSON.stringify(tasks));
+        saveTasks(tasks);
         renderTasks();
         updateDashboardStats();
         showToast('המשימה נמחקה');
