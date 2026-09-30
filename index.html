@@ -9,6 +9,12 @@
   <meta name="theme-color" content="#0f172a">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/c/c8/%D7%A1%D7%9E%D7%9C_%D7%97%D7%98%D7%99%D7%91%D7%AA_%D7%99%D7%94%D7%95%D7%A0%D7%AA%D7%9F.jpg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="רלש״ון 187">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/c/c8/%D7%A1%D7%9E%D7%9C_%D7%97%D7%98%D7%99%D7%91%D7%AA_%D7%99%D7%94%D7%95%D7%A0%D7%AA%D7%9F.jpg">
   <title>רלש״ון - חטיבת יהונתן 187 | מערכת לשכה אחודה</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -287,6 +293,47 @@
       padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 12px));
     }
 
+
+    /* Mobile-First App Styles */
+    @media (max-width: 640px) {
+      body {
+        font-size: 14px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      input, select, textarea {
+        font-size: 16px !important; /* Prevents auto-zoom in iOS Safari */
+      }
+      .card-luxury {
+        padding: 1rem !important;
+        border-radius: 1.25rem !important;
+      }
+      /* Bottom Sheet Modals on Mobile */
+      .modal-sheet-wrapper {
+        align-items: flex-end !important;
+        padding: 0 !important;
+      }
+      .modal-sheet-wrapper > div {
+        max-height: 90vh !important;
+        border-bottom-left-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        border-top-left-radius: 1.75rem !important;
+        border-top-right-radius: 1.75rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 20px)) !important;
+      }
+    }
+    .pb-safe {
+      padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 12px));
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
 </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-300 selection:bg-emerald-500 selection:text-white flex flex-col antialiased relative">
@@ -364,105 +411,88 @@
   </div>
 
   <!-- Main Bureau Header -->
-  <header class="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-sm transition-all duration-300">
-    <div class="max-w-7xl mx-auto px-4 py-3.5 flex items-center justify-between">
-      <div class="flex items-center gap-3.5">
-        <!-- Elite Unit Official Emblem & Branding -->
-        <div class="relative group flex items-center gap-3.5">
-          <div class="relative p-1.5 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl border-2 border-emerald-500/50 emblem-pulse-box shadow-lg hover:border-emerald-400 hover:shadow-emerald-500/30 transition-all duration-300 cursor-pointer" onclick="openEmblemModal()" title="לחץ להגדלת סמל חטיבת יהונתן">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c8/%D7%A1%D7%9E%D7%9C_%D7%97%D7%98%D7%99%D7%91%D7%AA_%D7%99%D7%94%D7%95%D7%A0%D7%AA%D7%9F.jpg" referrerpolicy="no-referrer" alt="סמל חטיבת יהונתן" class="h-14 w-auto max-w-[56px] object-contain rounded-xl drop-shadow">
-            <span class="absolute -bottom-1 -right-1 flex h-3 w-3">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-            </span>
-          </div>
-          <div class="flex flex-col">
-            <div class="flex items-center gap-2">
-              <span class="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">חטיבת יהונתן 187</span>
-              <span class="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                לשכת מפקד
-              </span>
-            </div>
-            <div class="flex items-center gap-2 mt-0.5">
-              <span class="text-xs text-emerald-600 dark:text-emerald-400 font-extrabold tracking-wide">"לֹא נָשׂוֹג אָחוֹר"</span>
-              <span class="text-[10px] text-slate-400">• מערכת שליטה אחודה</span>
-            </div>
-          </div>
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-sm transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
+      <!-- Right: Unit Emblem & Title -->
+      <div class="flex items-center gap-2.5 sm:gap-3.5">
+        <div class="relative p-1 bg-gradient-to-b from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 rounded-xl sm:rounded-2xl border-2 border-emerald-500/50 shadow-md cursor-pointer shrink-0" onclick="openEmblemModal()" title="סמל חטיבת יהונתן">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c8/%D7%A1%D7%9E%D7%9C_%D7%97%D7%98%D7%99%D7%91%D7%AA_%D7%99%D7%94%D7%95%D7%A0%D7%AA%D7%9F.jpg" referrerpolicy="no-referrer" alt="סמל חטיבת יהונתן" class="h-10 w-10 sm:h-12 sm:w-12 object-contain rounded-lg sm:rounded-xl">
         </div>
-
         <div>
-          <div class="flex items-center gap-2.5">
-            <h1 class="font-black text-xl tracking-tight leading-tight bg-gradient-to-l from-slate-900 via-slate-800 to-slate-900 dark:from-white dark:via-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
-              רלש״ון – חטיבת יהונתן
+          <div class="flex items-center gap-1.5 sm:gap-2">
+            <h1 class="font-black text-base sm:text-lg text-slate-900 dark:text-white tracking-tight leading-none">
+              רלש״ון 187
             </h1>
-            <span class="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-sm">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              לשכת מפקד
+            <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 leading-none">
+              לשכת מח״ט
             </span>
           </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">מערכת שליטה אחודה • לו״ז פנימי, אלפון חטיבה, משימות לשכה ותבניות מהירות</p>
+          <p class="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold mt-1 tracking-tight leading-none">
+            ״לֹא נָשׂוֹג אָחוֹר״
+          </p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Live Clock Widget -->
-        <div id="liveClockWidget" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-sm">
+      <!-- Left: Header Actions -->
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Live Clock Widget (Desktop only) -->
+        <div id="liveClockWidget" class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-xs font-semibold text-slate-700 dark:text-slate-200">
           <i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400"></i>
           <span id="liveClockDisplay">--:--</span>
         </div>
 
-        
         <!-- Cloud Sync 24/7 Status Badge -->
-        <div id="cloudSyncNavBadge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold" title="מצב סנכרון ענן בזמן אמת">
-          <i id="cloudSyncIcon" data-lucide="cloud-check" class="w-4 h-4 text-emerald-500"></i>
-          <span id="cloudSyncStatusText">ענן מחובר</span>
+        <div id="cloudSyncNavBadge" class="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold" title="סנכרון ענן 24/7">
+          <i id="cloudSyncIcon" data-lucide="cloud-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+          <span id="cloudSyncStatusText" class="hidden md:inline">ענן מחובר</span>
         </div>
 
-<!-- Target Calendar Badge -->
-        <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-bold">
+        <!-- Target Calendar Badge (Large screens) -->
+        <div class="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-bold">
           <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i>
-          <span>יומן יעד: <strong>187 - יומן חטיבתי</strong></span>
+          <span>יומן: <strong>187 - יומן חטיבתי</strong></span>
         </div>
 
-                
-        <!-- Change Password & Lock Buttons -->
-        <button onclick="openChangePasswordModal()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition text-xs font-semibold flex items-center gap-1.5 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer" title="שינוי סיסמת גישה">
-          <i data-lucide="key" class="w-4 h-4 text-amber-500"></i>
-          <span class="hidden xl:inline">סיסמה</span>
-        </button>
-        <button onclick="lockSystemNow()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition text-xs font-semibold flex items-center gap-1.5 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer" title="נעילת מערכת עכשיו">
-          <i data-lucide="lock" class="w-4 h-4 text-rose-500"></i>
-          <span class="hidden xl:inline">נעילה</span>
+        <!-- Mobile More Actions Drawer Button (Mobile Only) -->
+        <button onclick="openMobileActionsModal()" class="sm:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer" title="פעולות והגדרות נוספות">
+          <i data-lucide="more-vertical" class="w-4 h-4"></i>
         </button>
 
-<!-- Full System Backup & Restore Button -->
-        <button onclick="openBackupRestoreModal()" class="btn-press p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition text-xs font-semibold flex items-center gap-1.5 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer" title="גיבוי ושחזור נתוני המערכת">
-          <i data-lucide="archive" class="w-4 h-4 text-emerald-600 dark:text-emerald-400"></i>
-          <span class="hidden xl:inline">גיבוי / שחזור</span>
-        </button>
-
-<!-- Quick Reset Data Button -->
-        <button onclick="resetToDefaultData()" class="btn-press p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition text-xs font-semibold flex items-center gap-1.5 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer" title="איפוס נתוני אלפון ומשימות לברירת מחדל">
-          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-          <span class="hidden md:inline">איפוס</span>
-        </button>
+        <!-- Desktop Action Buttons (Hidden on Mobile) -->
+        <div class="hidden sm:flex items-center gap-1.5">
+          <button onclick="openChangePasswordModal()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer" title="שינוי סיסמה">
+            <i data-lucide="key" class="w-3.5 h-3.5 text-amber-500"></i>
+            <span class="hidden lg:inline">סיסמה</span>
+          </button>
+          <button onclick="openBackupRestoreModal()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer" title="גיבוי / שחזור">
+            <i data-lucide="archive" class="w-3.5 h-3.5 text-emerald-600"></i>
+            <span class="hidden lg:inline">גיבוי</span>
+          </button>
+          <button onclick="resetToDefaultData()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-300 text-xs font-semibold flex items-center gap-1 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer" title="איפוס נתונים לברירת מחדל">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span class="hidden lg:inline">איפוס</span>
+          </button>
+        </div>
 
         <!-- Dark Mode Toggle -->
-        <button onclick="toggleDarkMode()" class="btn-press p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition border border-slate-200/60 dark:border-slate-700/60 cursor-pointer" title="החלף מצב תצוגה (כהה/בהיר)">
+        <button onclick="toggleDarkMode()" class="btn-press p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700/60 cursor-pointer" title="החלף מצב תצוגה">
           <i data-lucide="moon" class="w-4 h-4 hidden dark:block text-amber-400"></i>
           <i data-lucide="sun" class="w-4 h-4 block dark:hidden text-amber-500"></i>
+        </button>
+
+        <!-- Lock Button -->
+        <button onclick="lockSystemNow()" class="btn-press p-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 border border-rose-200 dark:border-rose-900/60 cursor-pointer" title="נעילת מערכת">
+          <i data-lucide="lock" class="w-4 h-4"></i>
         </button>
       </div>
     </div>
 
-    <!-- Navigation Tabs Bar -->
-    <div class="max-w-7xl mx-auto px-4 flex gap-1 sm:gap-2 overflow-x-auto custom-scrollbar border-t border-slate-100 dark:border-slate-800/80 text-sm font-semibold">
+    <!-- Desktop Navigation Tabs Bar (Strictly Hidden on Mobile Phones!) -->
+    <div class="hidden sm:flex max-w-7xl mx-auto px-4 gap-1 sm:gap-2 overflow-x-auto custom-scrollbar border-t border-slate-100 dark:border-slate-800/80 text-sm font-semibold">
       <button id="navTabOverview" onclick="switchTab('overview')" class="py-2.5 px-3 border-b-2 border-brand-600 text-brand-600 dark:text-brand-400 flex items-center gap-2 whitespace-nowrap transition cursor-pointer">
         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
         <span>דשבורד ראשי</span>
       </button>
-
-
 
       <button id="navTabInternal" onclick="switchTab('internal')" class="py-2.5 px-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-2 whitespace-nowrap transition cursor-pointer">
         <i data-lucide="calendar-days" class="w-4 h-4"></i>
@@ -489,7 +519,7 @@
   </header>
 
   <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-28 sm:pb-8 flex-1 w-full space-y-5 sm:space-y-6">
+  <main class="max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-6 pb-24 sm:pb-8 flex-1 w-full space-y-4 sm:space-y-6">
 
     <!-- ==================== TAB 0: OVERVIEW / DASHBOARD ==================== -->
     <div id="tabContentOverview" class="space-y-6">
@@ -3874,6 +3904,20 @@
     }
 
 
+
+
+    function openMobileActionsModal() {
+      var m = document.getElementById('mobileActionsModal');
+      if (m) m.classList.remove('hidden');
+      safeLucide();
+    }
+
+    function closeMobileActionsModal() {
+      var m = document.getElementById('mobileActionsModal');
+      if (m) m.classList.add('hidden');
+    }
+
+
 window.onload = function() {
       initDarkMode();
       populateExtExecutiveSelect();
@@ -3900,7 +3944,7 @@ window.onload = function() {
   </script>
   
   <!-- Modal: System Backup & Restore -->
-  <div id="backupRestoreModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeBackupRestoreModal()">
+  <div id="backupRestoreModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex modal-sheet-wrapper items-center justify-center p-4" onclick="closeBackupRestoreModal()">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 border border-emerald-500/40 shadow-2xl space-y-4 text-right" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
         <div class="flex items-center gap-2.5">
@@ -3955,7 +3999,7 @@ window.onload = function() {
 
 
   <!-- Modal: Change Access Password -->
-  <div id="changePasswordModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex items-center justify-center p-4" onclick="closeChangePasswordModal()">
+  <div id="changePasswordModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex modal-sheet-wrapper items-center justify-center p-4" onclick="closeChangePasswordModal()">
     <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-6 border border-emerald-500/40 shadow-2xl space-y-4 text-right" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
         <div class="flex items-center gap-2">
@@ -3991,6 +4035,70 @@ window.onload = function() {
         <button onclick="handleChangePasswordSubmit()" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 cursor-pointer">
           <i data-lucide="check" class="w-4 h-4"></i>
           <span>שמור סיסמה חדשה</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ==================== MOBILE ACTIONS & SETTINGS DRAWER ==================== -->
+  <div id="mobileActionsModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4" onclick="closeMobileActionsModal()">
+    <div class="bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl max-w-md w-full p-5 border border-emerald-500/40 shadow-2xl space-y-4 text-right pb-safe" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center justify-center font-black text-sm">
+            187
+          </div>
+          <div>
+            <h3 class="font-black text-base text-slate-900 dark:text-white">הגדרות ופעולות לשכה</h3>
+            <span class="text-[11px] text-slate-400">חטיבת יהונתן • לשכת מח״ט</span>
+          </div>
+        </div>
+        <button onclick="closeMobileActionsModal()" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-2 text-xs font-semibold">
+        <button onclick="closeMobileActionsModal(); openChangePasswordModal();" class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-between transition cursor-pointer">
+          <span class="flex items-center gap-2.5">
+            <i data-lucide="key" class="w-4 h-4 text-amber-500"></i>
+            <span>שינוי סיסמת גישה למערכת</span>
+          </span>
+          <i data-lucide="chevron-left" class="w-4 h-4 text-slate-400"></i>
+        </button>
+
+        <button onclick="closeMobileActionsModal(); openBackupRestoreModal();" class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-between transition cursor-pointer">
+          <span class="flex items-center gap-2.5">
+            <i data-lucide="archive" class="w-4 h-4 text-emerald-500"></i>
+            <span>גיבוי ושחזור נתונים למכשיר</span>
+          </span>
+          <i data-lucide="chevron-left" class="w-4 h-4 text-slate-400"></i>
+        </button>
+
+        <button onclick="closeMobileActionsModal(); resetToDefaultData();" class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-between transition cursor-pointer">
+          <span class="flex items-center gap-2.5">
+            <i data-lucide="rotate-ccw" class="w-4 h-4 text-blue-500"></i>
+            <span>איפוס נתונים לברירת מחדל</span>
+          </span>
+          <i data-lucide="chevron-left" class="w-4 h-4 text-slate-400"></i>
+        </button>
+
+        <button onclick="closeMobileActionsModal(); toggleDarkMode();" class="w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center justify-between transition cursor-pointer">
+          <span class="flex items-center gap-2.5">
+            <i data-lucide="moon" class="w-4 h-4 text-purple-500"></i>
+            <span>החלפת מצב כהה / בהיר</span>
+          </span>
+          <i data-lucide="chevron-left" class="w-4 h-4 text-slate-400"></i>
+        </button>
+
+        <button onclick="closeMobileActionsModal(); lockSystemNow();" class="w-full p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-700 dark:text-rose-300 flex items-center justify-between transition cursor-pointer border border-rose-200 dark:border-rose-900/60">
+          <span class="flex items-center gap-2.5">
+            <i data-lucide="lock" class="w-4 h-4 text-rose-600"></i>
+            <span>נעילת מערכת עכשיו</span>
+          </span>
+          <i data-lucide="chevron-left" class="w-4 h-4 text-rose-400"></i>
         </button>
       </div>
     </div>
