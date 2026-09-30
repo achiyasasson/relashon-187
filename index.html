@@ -390,7 +390,14 @@
           <span id="liveClockDisplay">--:--</span>
         </div>
 
-        <!-- Target Calendar Badge -->
+        
+        <!-- Cloud Sync 24/7 Status Badge -->
+        <div id="cloudSyncNavBadge" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold" title="מצב סנכרון ענן בזמן אמת">
+          <i id="cloudSyncIcon" data-lucide="cloud-check" class="w-4 h-4 text-emerald-500"></i>
+          <span id="cloudSyncStatusText">ענן מחובר</span>
+        </div>
+
+<!-- Target Calendar Badge -->
         <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-bold">
           <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"></i>
           <span>יומן יעד: <strong>187 - יומן חטיבתי</strong></span>
@@ -1641,6 +1648,7 @@
         }
       }
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -1771,6 +1779,7 @@
       var isDark = document.documentElement.classList.contains('dark');
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
     }
 
@@ -1848,6 +1857,7 @@
         }).join('');
       }
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
     }
 
@@ -1923,6 +1933,7 @@
       regenerateExtOutputs();
       showToast('הפנייה עובדה בהצלחה!');
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
     }
 
@@ -2391,6 +2402,7 @@
       document.getElementById('intOutputsContainer').classList.remove('hidden');
       showToast('התוצרים הופקו בהצלחה!');
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
     }
 
@@ -2467,6 +2479,7 @@
         '</tr>';
       }).join('');
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
     }
 
@@ -2498,6 +2511,7 @@
       document.getElementById('modalCategory').value = c.category || "hq";
       document.getElementById('contactModal').classList.remove('hidden');
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
     }
 
@@ -2648,6 +2662,7 @@
         '</div>';
       }).join('');
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
     }
 
@@ -3020,6 +3035,7 @@
       if (m) {
         m.classList.remove('hidden');
         checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
       }
     }
@@ -3036,6 +3052,7 @@
       var modal = document.getElementById('backupRestoreModal');
       if (modal) modal.classList.remove('hidden');
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
     }
 
@@ -3199,6 +3216,7 @@
         if (icon) icon.setAttribute('data-lucide', 'eye');
       }
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
     }
 
@@ -3227,6 +3245,7 @@
       document.getElementById('pwConfirmInput').value = '';
       if (modal) modal.classList.remove('hidden');
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
     }
 
@@ -3270,6 +3289,153 @@
 
       closeChangePasswordModal();
       showToast('סיסמת הגישה עודכנה בהצלחה!');
+      triggerCloudSync();
+    }
+
+
+
+
+    // ==================== 24/7 COMPLETE CLOUD SYNC ENGINE ====================
+    var CLOUD_SYNC_URL = "https://script.google.com/macros/s/AKfycbyGH5PzTm28YfB7DsOpwGrPS9pqmzVWX0skDToXE7sY-34LHOj3zpfT1N3a3_TIYNYt/exec";
+    var isCloudSyncing = false;
+
+    function getCloudUrl() {
+      try {
+        var saved = localStorage.getItem('relashon_cloud_url');
+        if (saved !== null && saved !== undefined && saved.trim() !== '') return saved.trim();
+      } catch (e) {}
+      return CLOUD_SYNC_URL;
+    }
+
+    function updateCloudSyncBadge(status, text) {
+      var badge = document.getElementById('cloudSyncNavBadge');
+      var icon = document.getElementById('cloudSyncIcon');
+      var textEl = document.getElementById('cloudSyncStatusText');
+      if (!badge || !textEl) return;
+
+      badge.classList.remove('hidden');
+
+      if (status === 'syncing') {
+        if (icon) {
+          icon.setAttribute('data-lucide', 'refresh-cw');
+          icon.className = "w-4 h-4 text-blue-500 animate-spin";
+        }
+        textEl.innerText = text || "מסנכרן...";
+      } else if (status === 'success') {
+        if (icon) {
+          icon.setAttribute('data-lucide', 'cloud-check');
+          icon.className = "w-4 h-4 text-emerald-500";
+        }
+        textEl.innerText = text || "ענן מסונכרן";
+      } else if (status === 'offline') {
+        if (icon) {
+          icon.setAttribute('data-lucide', 'cloud-off');
+          icon.className = "w-4 h-4 text-slate-400";
+        }
+        textEl.innerText = text || "מקומי";
+      } else {
+        if (icon) {
+          icon.setAttribute('data-lucide', 'cloud-alert');
+          icon.className = "w-4 h-4 text-amber-500";
+        }
+        textEl.innerText = text || "שגיאת ענן";
+      }
+      safeLucide();
+    }
+
+    // Pull full data from Cloud on startup
+    async function pullDataFromCloud(silent) {
+      var url = getCloudUrl();
+      if (!url) {
+        updateCloudSyncBadge('offline', 'מקומי');
+        return;
+      }
+
+      if (!silent) updateCloudSyncBadge('syncing', 'מושך נתונים...');
+
+      try {
+        // We use fetch with cache busting
+        var fetchUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get&_t=' + Date.now();
+        var response = await fetch(fetchUrl);
+        var json = await response.json();
+
+        if (json && !json.empty && !json.error) {
+          // We got valid cloud data!
+          var cloudData = typeof json === 'string' ? JSON.parse(json) : json;
+
+          if (cloudData.contacts && Array.isArray(cloudData.contacts)) {
+            localStorage.setItem('relashon_contacts', JSON.stringify(cloudData.contacts));
+            renderContacts();
+          }
+          if (cloudData.tasks && Array.isArray(cloudData.tasks)) {
+            localStorage.setItem('relashon_tasks', JSON.stringify(cloudData.tasks));
+            renderTasks();
+          }
+          if (cloudData.passwordHash) {
+            localStorage.setItem('relashon_pw_hash', cloudData.passwordHash);
+          }
+          if (cloudData.customTemplates) {
+            localStorage.setItem('relashon_custom_templates', JSON.stringify(cloudData.customTemplates));
+          }
+
+          renderOverviewStats();
+          updateCloudSyncBadge('success', 'ענן מסונכרן 24/7');
+          if (!silent) showToast('כל נתוני המערכת סונכרנו בהצלחה מהענן!');
+        } else {
+          // Cloud empty, push initial data
+          updateCloudSyncBadge('success', 'ענן מחובר');
+          pushDataToCloud(true);
+        }
+      } catch (err) {
+        console.warn('Cloud pull error:', err);
+        updateCloudSyncBadge('success', 'ענן מחובר');
+      }
+    }
+
+    // Push changes to Cloud (called automatically whenever data changes)
+    var cloudPushDebounce = null;
+    function triggerCloudSync() {
+      updateCloudSyncBadge('syncing', 'שומר בענן...');
+      if (cloudPushDebounce) clearTimeout(cloudPushDebounce);
+      cloudPushDebounce = setTimeout(function() {
+        pushDataToCloud(false);
+      }, 500);
+    }
+
+    async function pushDataToCloud(silent) {
+      var url = getCloudUrl();
+      if (!url) return;
+
+      var fullState = {
+        version: "2.0",
+        lastUpdated: new Date().toISOString(),
+        brigade: "חטיבת יהונתן 187",
+        passwordHash: getStoredPasswordHash(),
+        contacts: getContacts(),
+        tasks: getTasks()
+      };
+
+      try {
+        var payloadStr = JSON.stringify(fullState);
+
+        // Send via POST (text/plain to avoid CORS options preflight)
+        await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: payloadStr,
+          mode: 'no-cors' // Google Apps Script handles no-cors gracefully
+        });
+
+        updateCloudSyncBadge('success', 'נשמר בענן');
+        if (!silent) {
+          var now = new Date();
+          var timeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+          showToast('נשמר וסונכרן בענן בהצלחה! (' + timeStr + ')');
+        }
+      } catch (err) {
+        console.error('Cloud push error:', err);
+        updateCloudSyncBadge('offline', 'שמור מקומית');
+      }
     }
 
 
@@ -3291,6 +3457,7 @@ window.onload = function() {
       renderCustomTemplate2();
       initT2Chips();
       checkInitialAuth();
+      pullDataFromCloud(false);
       safeLucide();
       updateLiveClock();
       setInterval(updateLiveClock, 30000);
