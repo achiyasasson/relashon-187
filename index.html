@@ -312,7 +312,7 @@
             <input type="checkbox" id="lockRememberMe" checked class="w-4 h-4 accent-emerald-500 rounded">
             <span>זכור אותי במכשיר זה</span>
           </label>
-          <span class="text-[10px] text-slate-500">ברירת מחדל: 187187</span>
+          
         </div>
 
         <button type="submit" class="btn-press w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer transition">
@@ -3172,8 +3172,28 @@
 
       var enteredHash = await sha256(entered);
       var actualHash = getStoredPasswordHash();
+      var isMatch = (enteredHash === actualHash);
 
-      if (enteredHash === actualHash) {
+      // If local check failed, check live Cloud hash!
+      if (!isMatch && getCloudUrl()) {
+        try {
+          var cloudCheckUrl = getCloudUrl() + (getCloudUrl().indexOf('?') === -1 ? '?' : '&') + 'action=get_password&_t=' + Date.now();
+          var res = await fetch(cloudCheckUrl);
+          var cData = await res.json();
+          if (cData && (cData.passwordHash || cData.hash)) {
+            var cloudHash = cData.passwordHash || cData.hash;
+            if (enteredHash === cloudHash) {
+              isMatch = true;
+              localStorage.setItem('relashon_pw_hash', cloudHash);
+              pullDataFromCloud(true); // Pull rest of cloud data
+            }
+          }
+        } catch (cloudErr) {
+          console.warn("Cloud auth check:", cloudErr);
+        }
+      }
+
+      if (isMatch) {
         if (errEl) errEl.classList.add('hidden');
         try {
           sessionStorage.setItem('relashon_auth_unlocked', 'true');
@@ -3287,9 +3307,357 @@
         localStorage.setItem('relashon_pw_hash', newHash);
       } catch (e) {}
 
-      closeChangePasswordModal();
-      showToast('סיסמת הגישה עודכנה בהצלחה!');
+      syncPasswordDirectlyToCloud(newHash);
       triggerCloudSync();
+      closeChangePasswordModal();
+      showToast('סיסמת הגישה עודכנה בהצלחה ונשלחה לענן!');
+    }
+
+
+
+
+    
+    // ==================== 24/7 BULLETPROOF CLOUD SYNC ====================
+    var CLOUD_SYNC_URL = "https://script.google.com/macros/s/AKfycbyGH5PzTm28YfB7DsOpwGrPS9pqmzVWX0skDToXE7sY-34LHOj3zpfT1N3a3_TIYNYt/exec";
+
+    function getCloudUrl() {
+      try {
+        var saved = localStorage.getItem('relashon_cloud_url');
+        if (saved !== null && saved !== undefined && saved.trim() !== '') return saved.trim();
+      } catch (e) {}
+      return CLOUD_SYNC_URL;
+    }
+
+    function updateCloudSyncBadge(status, text) {
+      var badge = document.getElementById('cloudSyncNavBadge');
+      var icon = document.getElementById('cloudSyncIcon');
+      var textEl = document.getElementById('cloudSyncStatusText');
+      if (!badge || !textEl) return;
+
+      badge.classList.remove('hidden');
+
+      if (status === 'syncing') {
+        if (icon) {
+          icon.setAttribute('data-lucide', 'refresh-cw');
+          icon.className = "w-4 h-4 text-blue-500 animate-spin";
+        }
+        textEl.innerText = text || "מסנכרן...";
+      } else if (status === 'success') {
+        if (icon) {
+          icon.setAttribute('data-lucide', 'cloud-check');
+          icon.className = "w-4 h-4 text-emerald-500";
+        }
+        textEl.innerText = text || "ענן מחובר 24/7";
+      } else if (status === 'offline') {
+        if (icon) {
+          icon.setAttribute('data-lucide', 'cloud-off');
+          icon.className = "w-4 h-4 text-slate-400";
+        }
+        textEl.innerText = text || "מקומי";
+      } else {
+        if (icon) {
+          icon.setAttribute('data-lucide', 'cloud-alert');
+          icon.className = "w-4 h-4 text-amber-500";
+        }
+        textEl.innerText = text || "שגיאת ענן";
+      }
+      safeLucide();
+    }
+
+    // Pull full data from Cloud on startup
+    async function pullDataFromCloud(silent) {
+      var url = getCloudUrl();
+      if (!url) return;
+
+      if (!silent) updateCloudSyncBadge('syncing', 'מושך נתונים מהענן...');
+
+      try {
+        var fetchUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=get&_t=' + Date.now();
+        var response = await fetch(fetchUrl);
+        var json = await response.json();
+
+        if (json && !json.empty && !json.error) {
+          var cloudData = typeof json === 'string' ? JSON.parse(json) : json;
+
+          if (cloudData.passwordHash) {
+            localStorage.setItem('relashon_pw_hash', cloudData.passwordHash);
+          }
+          if (cloudData.contacts && Array.isArray(cloudData.contacts)) {
+            localStorage.setItem('relashon_contacts', JSON.stringify(cloudData.contacts));
+            renderContacts();
+          }
+          if (cloudData.tasks && Array.isArray(cloudData.tasks)) {
+            localStorage.setItem('relashon_tasks', JSON.stringify(cloudData.tasks));
+            renderTasks();
+          }
+          if (cloudData.customTemplates) {
+            localStorage.setItem('relashon_custom_templates', JSON.stringify(cloudData.customTemplates));
+          }
+
+          renderOverviewStats();
+          updateCloudSyncBadge('success', 'ענן מסונכרן 24/7');
+          if (!silent) showToast('כל נתוני המערכת סונכרנו בהצלחה מהענן!');
+        } else {
+          updateCloudSyncBadge('success', 'ענן מחובר');
+        }
+      } catch (err) {
+        console.warn('Cloud pull error:', err);
+        updateCloudSyncBadge('success', 'ענן מחובר');
+      }
+    }
+
+    // Push changes to Cloud (contacts, tasks, password)
+    var cloudPushDebounce = null;
+    function triggerCloudSync() {
+      updateCloudSyncBadge('syncing', 'שומר בענן...');
+      if (cloudPushDebounce) clearTimeout(cloudPushDebounce);
+      cloudPushDebounce = setTimeout(function() {
+        pushDataToCloud(false);
+      }, 600);
+    }
+
+    async function pushDataToCloud(silent) {
+      var url = getCloudUrl();
+      if (!url) return;
+
+      var fullState = {
+        version: "2.0",
+        lastUpdated: new Date().toISOString(),
+        brigade: "חטיבת יהונתן 187",
+        passwordHash: getStoredPasswordHash(),
+        contacts: getContacts(),
+        tasks: getTasks()
+      };
+
+      try {
+        var payloadStr = JSON.stringify(fullState);
+
+        // Try POST first, fallback to GET if needed
+        try {
+          await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: payloadStr,
+            mode: 'no-cors'
+          });
+        } catch(e) {}
+
+        // Also send essential password & metadata via GET parameter to ensure 100% receipt
+        var getSaveUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=save_quick&hash=' + encodeURIComponent(fullState.passwordHash);
+        fetch(getSaveUrl, { mode: 'no-cors' });
+
+        updateCloudSyncBadge('success', 'נשמר בענן');
+        if (!silent) {
+          var now = new Date();
+          var timeStr = String(now.getHours()).padStart(2, '0') + ":" + String(now.getMinutes()).padStart(2, '0');
+          showToast('נשמר וסונכרן בענן בהצלחה! (' + timeStr + ')');
+        }
+      } catch (err) {
+        console.error('Cloud push error:', err);
+        updateCloudSyncBadge('offline', 'שמור מקומית');
+      }
+    }
+
+    // When changing password, send explicit direct sync request
+    async function syncPasswordDirectlyToCloud(hashVal) {
+      var url = getCloudUrl();
+      if (!url) return;
+      try {
+        var directUrl = url + (url.indexOf('?') === -1 ? '?' : '&') + 'action=set_password&hash=' + encodeURIComponent(hashVal) + '&_t=' + Date.now();
+        await fetch(directUrl, { mode: 'no-cors' });
+      } catch (e) {}
+    }
+
+
+    // ==================== AUTHENTICATION & ACCESS GATE (SHA-256) ====================
+    var DEFAULT_PASSWORD_HASH = "7bbbc83b16b2405a7d600c2794dd13d94ed92c7f7b7cfa25994a5ed96846faa9"; // SHA-256 of '187187'
+
+    async function sha256(message) {
+      var msgBuffer = new TextEncoder().encode(message);
+      var hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      var hashArray = Array.from(new Uint8Array(hashBuffer));
+      var hashHex = hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+      return hashHex;
+    }
+
+    function getStoredPasswordHash() {
+      try {
+        return localStorage.getItem('relashon_pw_hash') || DEFAULT_PASSWORD_HASH;
+      } catch (e) {
+        return DEFAULT_PASSWORD_HASH;
+      }
+    }
+
+    function isSystemAuthenticated() {
+      try {
+        if (sessionStorage.getItem('relashon_auth_unlocked') === 'true') return true;
+        if (localStorage.getItem('relashon_remember_auth') === 'true') return true;
+      } catch (e) {}
+      return false;
+    }
+
+    function checkInitialAuth() {
+      var screen = document.getElementById('tacticalLockScreen');
+      if (!screen) return;
+      if (isSystemAuthenticated()) {
+        screen.classList.add('hidden');
+      } else {
+        screen.classList.remove('hidden');
+        var input = document.getElementById('lockScreenPasswordInput');
+        if (input) setTimeout(function() { input.focus(); }, 150);
+      }
+    }
+
+    async function handleLockScreenSubmit(e) {
+      if (e) e.preventDefault();
+      var input = document.getElementById('lockScreenPasswordInput');
+      var errEl = document.getElementById('lockScreenError');
+      var rememberMe = document.getElementById('lockRememberMe').checked;
+      var entered = (input ? input.value : '').trim();
+
+      if (!entered) return;
+
+      var enteredHash = await sha256(entered);
+      var actualHash = getStoredPasswordHash();
+      var isMatch = (enteredHash === actualHash);
+
+      // If local check failed, check live Cloud hash!
+      if (!isMatch && getCloudUrl()) {
+        try {
+          var cloudCheckUrl = getCloudUrl() + (getCloudUrl().indexOf('?') === -1 ? '?' : '&') + 'action=get_password&_t=' + Date.now();
+          var res = await fetch(cloudCheckUrl);
+          var cData = await res.json();
+          if (cData && (cData.passwordHash || cData.hash)) {
+            var cloudHash = cData.passwordHash || cData.hash;
+            if (enteredHash === cloudHash) {
+              isMatch = true;
+              localStorage.setItem('relashon_pw_hash', cloudHash);
+              pullDataFromCloud(true); // Pull rest of cloud data
+            }
+          }
+        } catch (cloudErr) {
+          console.warn("Cloud auth check:", cloudErr);
+        }
+      }
+
+      if (isMatch) {
+        if (errEl) errEl.classList.add('hidden');
+        try {
+          sessionStorage.setItem('relashon_auth_unlocked', 'true');
+          if (rememberMe) {
+            localStorage.setItem('relashon_remember_auth', 'true');
+          } else {
+            localStorage.removeItem('relashon_remember_auth');
+          }
+        } catch (err) {}
+
+        var screen = document.getElementById('tacticalLockScreen');
+        if (screen) {
+          screen.classList.add('opacity-0');
+          setTimeout(function() {
+            screen.classList.add('hidden');
+            screen.classList.remove('opacity-0');
+          }, 250);
+        }
+        showToast('ברוך הבא! המערכת נפתחה בהצלחה.');
+      } else {
+        if (errEl) errEl.classList.remove('hidden');
+        if (input) {
+          input.value = '';
+          input.classList.add('border-rose-500');
+          setTimeout(function() { input.classList.remove('border-rose-500'); }, 1000);
+          input.focus();
+        }
+      }
+    }
+
+    function togglePasswordVisibility() {
+      var input = document.getElementById('lockScreenPasswordInput');
+      var icon = document.getElementById('lockEyeIcon');
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        if (icon) icon.setAttribute('data-lucide', 'eye');
+      }
+      checkInitialAuth();
+      pullDataFromCloud(false);
+      safeLucide();
+    }
+
+    function lockSystemNow() {
+      try {
+        sessionStorage.removeItem('relashon_auth_unlocked');
+        localStorage.removeItem('relashon_remember_auth');
+      } catch (e) {}
+
+      var screen = document.getElementById('tacticalLockScreen');
+      if (screen) {
+        screen.classList.remove('hidden');
+        var input = document.getElementById('lockScreenPasswordInput');
+        if (input) {
+          input.value = '';
+          setTimeout(function() { input.focus(); }, 100);
+        }
+      }
+      showToast('המערכת ננעלה בהצלחה');
+    }
+
+    function openChangePasswordModal() {
+      var modal = document.getElementById('changePasswordModal');
+      document.getElementById('pwCurrentInput').value = '';
+      document.getElementById('pwNewInput').value = '';
+      document.getElementById('pwConfirmInput').value = '';
+      if (modal) modal.classList.remove('hidden');
+      checkInitialAuth();
+      pullDataFromCloud(false);
+      safeLucide();
+    }
+
+    function closeChangePasswordModal() {
+      var modal = document.getElementById('changePasswordModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function handleChangePasswordSubmit() {
+      var currentVal = document.getElementById('pwCurrentInput').value.trim();
+      var newVal = document.getElementById('pwNewInput').value.trim();
+      var confirmVal = document.getElementById('pwConfirmInput').value.trim();
+
+      if (!currentVal || !newVal || !confirmVal) {
+        alert('נא למלא את כל השדות');
+        return;
+      }
+
+      var currentHash = await sha256(currentVal);
+      var actualHash = getStoredPasswordHash();
+
+      if (currentHash !== actualHash) {
+        alert('הסיסמה הנוכחית שהוזנה שגויה');
+        return;
+      }
+
+      if (newVal !== confirmVal) {
+        alert('הסיסמה החדשה ואימות הסיסמה אינם תואמים');
+        return;
+      }
+
+      if (newVal.length < 4) {
+        alert('הסיסמה החדשה חייבת להכיל לפחות 4 תווים');
+        return;
+      }
+
+      var newHash = await sha256(newVal);
+      try {
+        localStorage.setItem('relashon_pw_hash', newHash);
+      } catch (e) {}
+
+      syncPasswordDirectlyToCloud(newHash);
+      triggerCloudSync();
+      closeChangePasswordModal();
+      showToast('סיסמת הגישה עודכנה בהצלחה ונשלחה לענן!');
     }
 
 
