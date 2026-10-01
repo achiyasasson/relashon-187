@@ -6718,6 +6718,41 @@
       }
     }
 
+    
+    // ==================== CALENDAR DATE MATCHING HELPER (RFC 5545 / GOOGLE CALENDAR) ====================
+    function isEventOnDate(e, targetDateISO) {
+      if (!e || !e.start) return false;
+
+      var startStr = e.start;
+      var endStr = e.end || startStr;
+
+      var sDate = startStr.split('T')[0];
+      var eDate = endStr.split('T')[0];
+
+      if (targetDateISO < sDate || targetDateISO > eDate) return false;
+
+      if (sDate === targetDateISO && eDate === targetDateISO) return true;
+      if (sDate === targetDateISO) return true;
+
+      if (targetDateISO > sDate && targetDateISO < eDate) return true;
+
+      // When targetDateISO === eDate:
+      // In Google Calendar / RFC 5545, all-day events and events ending at midnight have an EXCLUSIVE end date
+      if (targetDateISO === eDate) {
+        var isAllDay = Boolean(e.allDay) || (startStr.indexOf('T') === -1);
+        var endTime = (endStr.indexOf('T') !== -1) ? endStr.split('T')[1] : '00:00:00';
+        var endTimeClean = endTime.split('+')[0].split('-')[0].replace('Z', '').trim();
+
+        // If it's an all-day event or ends at 00:00:00, eDate is EXCLUSIVE (ended at previous day midnight)
+        if (isAllDay || endTimeClean === '00:00:00' || endTimeClean === '00:00') {
+          return false;
+        }
+        return true;
+      }
+
+      return false;
+    }
+
     function renderActiveCalendarView() {
       if (!calPersonFilterInitialized) {
         populateCalPersonFilterOptions();
@@ -6785,9 +6820,7 @@
         var isToday = (dayDate.toDateString() === now.toDateString());
 
         var dayEvents = events.filter(function(e) {
-          var sDate = (e.start || '').split('T')[0];
-          var eDate = (e.end || '').split('T')[0];
-          return sDate === dateISO || (sDate <= dateISO && eDate >= dateISO);
+          return isEventOnDate(e, dateISO);
         });
 
         var btn = document.createElement('button');
@@ -6876,9 +6909,7 @@
 
       var filtered = getFilteredEvents();
       var dayEvents = filtered.filter(function(e) {
-        var sDate = (e.start || '').split('T')[0];
-        var eDate = (e.end || '').split('T')[0];
-        return sDate === dateISO || (sDate <= dateISO && eDate >= dateISO);
+        return isEventOnDate(e, dateISO);
       });
 
       var countEl = document.getElementById('calDayTotalEventsCount');
@@ -7036,9 +7067,7 @@
       var targetDateISO = yStr + '-' + mStr + '-' + dStr;
 
       var events = getBrigadeEvents().filter(function(e) {
-        var sDate = (e.start || '').split('T')[0];
-        var eDate = (e.end || '').split('T')[0];
-        return sDate === targetDateISO || (sDate <= targetDateISO && eDate >= targetDateISO);
+        return isEventOnDate(e, targetDateISO);
       });
 
       var dayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -7156,9 +7185,7 @@
         var dateISO = yStr + '-' + mStr + '-' + dStr;
 
         var matching = filtered.filter(function(e) {
-          var sDate = (e.start || '').split('T')[0];
-          var eDate = (e.end || '').split('T')[0];
-          return sDate === dateISO || (sDate <= dateISO && eDate >= dateISO);
+          return isEventOnDate(e, dateISO);
         });
 
         var maxChips = 2;
@@ -7255,9 +7282,7 @@
         var dateISO = yStr + '-' + mStr + '-' + dStr;
 
         var matching = filtered.filter(function(e) {
-          var sDate = (e.start || '').split('T')[0];
-          var eDate = (e.end || '').split('T')[0];
-          return (sDate === dateISO) || (sDate <= dateISO && eDate >= dateISO);
+          return isEventOnDate(e, dateISO);
         });
 
         if (matching.length === 0) {
